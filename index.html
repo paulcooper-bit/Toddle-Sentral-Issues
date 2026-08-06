@@ -231,6 +231,7 @@
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">System *</label>
                             <select id="form-system" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                <option value="" disabled selected hidden>Select System...</option>
                                 <option value="Toddle">Toddle</option>
                                 <option value="Sentral">Sentral</option>
                                 <option value="Both">Both / Sync</option>
@@ -239,6 +240,7 @@
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Department *</label>
                             <select id="form-subject" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                <option value="" disabled selected hidden>Select Department...</option>
                                 <option value="General">General</option>
                                 <option value="Core">Core</option>
                                 <option value="Arts">Arts</option>
@@ -1017,7 +1019,7 @@
                 const email = document.getElementById('form-email').value;
                 const description = document.getElementById('form-description').value;
 
-                if (!title || !reporter || !description) {
+                if (!title || !reporter || !description || !system || !subject) {
                     window.showToast("Please fill in all required fields.", "warning");
                     return;
                 }
