@@ -39,7 +39,7 @@
             </div>
 
             <button onclick="signInWithGoogle()" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center space-x-3 shadow-sm">
-                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
                 <span>Sign in with Google</span>
             </button>
         </div>
@@ -354,25 +354,25 @@
                     </div>
                 </div>
 
-                <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 space-y-3">
-                    <h3 class="text-xs font-bold uppercase text-indigo-900 tracking-wider flex items-center">
-                        <i class="fa-solid fa-sliders text-indigo-600 mr-1.5"></i> Admin Update Notes
-                    </h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                            <select id="modal-status-select" class="w-full border border-slate-300 rounded-lg p-2 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500">
-                                <option value="Open">🔴 Open</option>
-                                <option value="In Progress">🟡 In Progress</option>
-                                <option value="Resolved">🟢 Resolved</option>
-                            </select>
-                        </div>
-                        <div class="sm:col-span-2">
-                            <input type="text" id="modal-notes-input" placeholder="Admin notes/updates..." class="w-full border border-slate-300 rounded-lg p-2 text-xs bg-white">
-                        </div>
+                <!-- NEW ACTIVITY & COMMENTS THREAD -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl flex flex-col h-[280px]">
+                    <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex justify-between items-center rounded-t-xl">
+                        <h3 class="text-xs font-bold uppercase text-slate-600 tracking-wider flex items-center">
+                            <i class="fa-regular fa-comments text-slate-400 mr-1.5"></i> Activity & Comments
+                        </h3>
+                        <select id="modal-status-select" onchange="updateIssueStatus()" class="border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+                            <option value="Open">🔴 Open</option>
+                            <option value="In Progress">🟡 In Progress</option>
+                            <option value="Resolved">🟢 Resolved</option>
+                        </select>
                     </div>
-                    <div class="flex justify-end">
-                        <button onclick="saveModalStatusUpdate()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
-                            Save Updates
+                    <div id="modal-chat-thread" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white">
+                        <!-- Chat messages go here -->
+                    </div>
+                    <div class="p-3 bg-slate-50 border-t border-slate-200 rounded-b-xl flex gap-2">
+                        <input type="text" id="modal-chat-input" onkeypress="if(event.key === 'Enter') postChatMessage()" placeholder="Type a comment..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <button onclick="postChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-lg transition shadow-sm text-sm">
+                            <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
@@ -382,7 +382,10 @@
                 <button id="modal-upvote-btn" onclick="upvoteCurrentModalIssue()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg transition flex items-center">
                     <i class="fa-solid fa-thumbs-up mr-1.5"></i> +1 I Have This Issue Too (<span id="modal-upvote-count">0</span>)
                 </button>
-                <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+                <div class="flex space-x-2">
+                    <button id="modal-delete-btn" class="hidden px-4 py-1.5 bg-red-100 text-red-700 rounded-lg font-bold hover:bg-red-200 transition transition-colors duration-300">Delete</button>
+                    <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -391,11 +394,13 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // IMPORT FIX: Added deleteDoc here to allow deleting tickets
+        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // IMPORTANT: Set your school's allowed email domains here
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
+        const ADMIN_EMAILS = ["paul.cooper@online.island.edu.hk"]; // VIP Admin List
 
         // Real Firebase Keys configured by user
         const firebaseConfig = {
@@ -420,10 +425,12 @@
         window.auth = auth;
         window.updateDoc = updateDoc;
         window.doc = doc;
+        window.deleteDoc = deleteDoc; // Exported for inline HTML access
 
         let isGridMode = true;
         let selectedModalIssueId = null;
         let unsubscribeIssues = null;
+        let deleteTimeout = null;
 
         // Notification & User Tracking State
         let previousIssuesState = {};
@@ -744,16 +751,40 @@
 
         window.startStudioRecord = async function() {
             try {
-                let stream;
+                let combinedStream = new MediaStream();
+                let voiceStream = null;
+                
                 try {
-                    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    // 1. Ask for Microphone FIRST! 
+                    try {
+                        voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        voiceStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
+                    } catch (micErr) {
+                        console.warn("Microphone denied or unavailable.");
+                        window.showToast("Recording without microphone audio.", "warning");
+                    }
+
+                    // 2. Ask for Screen SECOND
+                    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    displayStream.getTracks().forEach(track => combinedStream.addTrack(track));
+
                 } catch (err) {
+                    if (voiceStream) {
+                        voiceStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    if (err.name === 'NotAllowedError' || err.message.includes('Permission denied')) {
+                        window.showToast("Screen recording cancelled.", "warning");
+                        return; // Stop the process
+                    }
+                    
                     console.log("Real screen recording blocked, using mock canvas fallback.");
-                    stream = await mockScreenRecord();
+                    combinedStream = await mockScreenRecord();
                 }
 
                 recordedChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
+                // 3. Record the combined video + microphone stream
+                mediaRecorder = new MediaRecorder(combinedStream);
                 mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
                 
                 mediaRecorder.onstop = () => {
@@ -814,7 +845,6 @@
             document.getElementById('modal-date').innerText = new Date(item.date).toLocaleDateString();
             document.getElementById('modal-description').innerText = item.description;
             document.getElementById('modal-status-select').value = item.status;
-            document.getElementById('modal-notes-input').value = item.notes || '';
             document.getElementById('modal-upvote-count').innerText = item.upvotes || 0;
 
             const mediaSection = document.getElementById('modal-media-section');
@@ -831,6 +861,51 @@
                 mediaContainer.innerHTML = '';
             }
 
+            // Build real-time chat interface inside modal
+            const chatThread = document.getElementById('modal-chat-thread');
+            chatThread.innerHTML = '';
+            
+            let allComments = item.comments || [];
+            if (item.notes && allComments.length === 0) {
+                allComments.push({ author: "Admin (Legacy)", text: item.notes, date: item.date, system: true });
+            }
+            
+            if (allComments.length === 0) {
+                chatThread.innerHTML = '<div class="text-center text-xs text-slate-400 mt-4 flex flex-col items-center"><i class="fa-regular fa-comments text-2xl mb-2 opacity-50"></i>No comments yet. Start the conversation!</div>';
+            } else {
+                allComments.forEach(msg => {
+                    const isSystem = msg.system;
+                    const isMe = window.auth.currentUser && msg.authorUid === window.auth.currentUser.uid;
+                    
+                    if (isSystem) {
+                        chatThread.innerHTML += `<div class="flex justify-center my-2"><span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-full shadow-xs border border-slate-200"><i class="fa-solid fa-info-circle mr-1 text-indigo-400"></i> ${msg.author} ${msg.text}</span></div>`;
+                    } else {
+                        chatThread.innerHTML += `
+                            <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mt-2">
+                                <div class="text-[9px] text-slate-400 mb-0.5 px-1 font-medium">${isMe ? 'You' : msg.author} • ${new Date(msg.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                                <div class="${isMe ? 'bg-indigo-600 text-white rounded-l-xl rounded-tr-xl' : 'bg-slate-100 text-slate-700 border border-slate-200 rounded-r-xl rounded-tl-xl'} px-3 py-2 text-sm shadow-sm max-w-[85%] whitespace-pre-wrap">${msg.text}</div>
+                            </div>
+                        `;
+                    }
+                });
+                setTimeout(() => { chatThread.scrollTop = chatThread.scrollHeight; }, 10);
+            }
+
+            // Secure Delete Button Visualization
+            const deleteBtn = document.getElementById('modal-delete-btn');
+            const currentUser = window.auth.currentUser;
+            const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
+
+            if (currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.innerHTML = 'Delete';
+                deleteBtn.classList.replace('bg-red-600', 'bg-red-100');
+                deleteBtn.classList.replace('text-white', 'text-red-700');
+                deleteBtn.onclick = () => window.requestDeleteIssue(item.id);
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+
             document.getElementById('issue-modal').classList.remove('hidden');
         };
 
@@ -839,36 +914,92 @@
             selectedModalIssueId = null;
         };
 
-        window.saveModalStatusUpdate = async function() {
-            if (!selectedModalIssueId || !window.auth.currentUser) return;
-            try {
-                const newStatus = document.getElementById('modal-status-select').value;
-                const newNotes = document.getElementById('modal-notes-input').value;
+        window.requestDeleteIssue = async function(id) {
+            const btn = document.getElementById('modal-delete-btn');
+            if (btn.innerText === 'Delete') {
+                // Safety Tap 1
+                btn.innerText = 'Confirm Delete';
+                btn.classList.replace('bg-red-100', 'bg-red-600');
+                btn.classList.replace('text-red-700', 'text-white');
                 
-                const docRef = window.doc(window.db, 'issues', selectedModalIssueId);
-                
-                await window.updateDoc(docRef, { status: newStatus, notes: newNotes });
-                
-                const item = window.issues.find(i => i.id === selectedModalIssueId);
-                
-                window.closeModal();
-                window.showToast(`Issue status updated to '${newStatus}'.`, 'success');
-                
-                if (item && item.email) {
-                    setTimeout(() => {
-                        window.showToast(`Automated update email sent to ${item.email}!`, 'info');
-                    }, 1200);
+                deleteTimeout = setTimeout(() => {
+                    if (btn) {
+                        btn.innerText = 'Delete';
+                        btn.classList.replace('bg-red-600', 'bg-red-100');
+                        btn.classList.replace('text-white', 'text-red-700');
+                    }
+                }, 3000);
+            } else {
+                // Confirmed execution
+                clearTimeout(deleteTimeout);
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+                try {
+                    await window.deleteDoc(window.doc(window.db, 'issues', id));
+                    window.closeModal();
+                    window.showToast("Issue deleted permanently.", "success");
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("Error deleting issue.", "error");
+                    btn.innerText = 'Delete';
                 }
+            }
+        };
+
+        window.updateIssueStatus = async function() {
+            if (!selectedModalIssueId || !window.auth.currentUser) return;
+            const newStatus = document.getElementById('modal-status-select').value;
+            const docRef = window.doc(window.db, 'issues', selectedModalIssueId);
+            const item = window.issues.find(i => i.id === selectedModalIssueId);
+            
+            const systemMsg = {
+                author: window.auth.currentUser.displayName || "Someone",
+                text: `changed the status to ${newStatus}`,
+                date: new Date().toISOString(),
+                system: true
+            };
+            
+            const updatedComments = [...(item.comments || []), systemMsg];
+            
+            try {
+                await window.updateDoc(docRef, { status: newStatus, comments: updatedComments });
+                window.showToast(`Status updated to ${newStatus}.`, 'success');
                 
                 if (newStatus === 'Resolved' && item && item.upvotes > 1) {
                     setTimeout(() => {
                         window.showToast(`Bulk Broadcast: Instant alerts sent to ${item.upvotes} staff members who upvoted this issue!`, 'success');
                     }, 2500);
                 }
-
             } catch(e) {
                 console.error(e);
                 window.showToast("Failed to update status.", "error");
+            }
+        };
+
+        window.postChatMessage = async function() {
+            if (!selectedModalIssueId || !window.auth.currentUser) return;
+            const inputEl = document.getElementById('modal-chat-input');
+            const text = inputEl.value.trim();
+            if (!text) return;
+            
+            const docRef = window.doc(window.db, 'issues', selectedModalIssueId);
+            const item = window.issues.find(i => i.id === selectedModalIssueId);
+            
+            const newMsg = {
+                author: window.auth.currentUser.displayName || "User",
+                authorUid: window.auth.currentUser.uid,
+                text: text,
+                date: new Date().toISOString(),
+                system: false
+            };
+            
+            const updatedComments = [...(item.comments || []), newMsg];
+            
+            try {
+                inputEl.value = '';
+                await window.updateDoc(docRef, { comments: updatedComments });
+            } catch(e) {
+                console.error(e);
+                window.showToast("Failed to post comment.", "error");
             }
         };
 
@@ -974,7 +1105,6 @@
 
                 if (user) {
                     // DOMAIN RESTRICTION CHECK
-                    // If the user's email does not end with any of the allowed domains, block them.
                     const isDomainAllowed = user.email && ALLOWED_DOMAINS.some(domain => user.email.endsWith(domain));
                     
                     if (!isDomainAllowed) {
@@ -1010,9 +1140,39 @@
             const newSubmitBtn = submitBtn.cloneNode(true);
             submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
 
+            const requiredFieldIds = ['form-title', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
+            requiredFieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        el.classList.remove('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                        el.classList.add('border-slate-300', 'focus:ring-indigo-500');
+                    });
+                }
+            });
+
             newSubmitBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 if (!auth.currentUser) return;
+
+                let isValid = true;
+                let firstInvalidElement = null;
+
+                requiredFieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el.value) {
+                        isValid = false;
+                        el.classList.remove('border-slate-300', 'focus:ring-indigo-500');
+                        el.classList.add('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                        if (!firstInvalidElement) firstInvalidElement = el;
+                    }
+                });
+
+                if (!isValid) {
+                    window.showToast("Please complete the highlighted fields.", "warning");
+                    if (firstInvalidElement) firstInvalidElement.focus();
+                    return;
+                }
 
                 const title = document.getElementById('form-title').value;
                 const system = document.getElementById('form-system').value;
@@ -1020,11 +1180,6 @@
                 const reporter = document.getElementById('form-reporter').value;
                 const email = document.getElementById('form-email').value;
                 const description = document.getElementById('form-description').value;
-
-                if (!title || !reporter || !description || !system || !subject) {
-                    window.showToast("Please fill in all required fields.", "warning");
-                    return;
-                }
 
                 // Show loading state on button during upload
                 const originalBtnText = newSubmitBtn.innerHTML;
@@ -1045,7 +1200,7 @@
                     const newIssue = {
                         title, system, subject, reporter, email, description,
                         date: new Date().toISOString(),
-                        status: "Open", notes: "", upvotes: 1,
+                        status: "Open", notes: "", upvotes: 1, comments: [],
                         mediaUrl: finalMediaUrl, // Using the short URL instead of the giant base64 text
                         mediaType: pendingMedia.type || null,
                         authorUid: auth.currentUser.uid, 
@@ -1058,6 +1213,15 @@
                     document.getElementById('issue-form').reset();
                     window.clearAttachments();
                     
+                    // Reset styling just in case
+                    requiredFieldIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) {
+                            el.classList.remove('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                            el.classList.add('border-slate-300', 'focus:ring-indigo-500');
+                        }
+                    });
+
                     // Keep the name and email auto-filled for their next issue!
                     document.getElementById('form-reporter').value = auth.currentUser.displayName;
                     const emailInput = document.getElementById('form-email');
@@ -1106,6 +1270,12 @@
                 
                 window.updateStats();
                 window.renderIssues();
+                
+                // Real-time chat sync! If the modal is currently open to an issue, auto-refresh it
+                if (selectedModalIssueId && !document.getElementById('issue-modal').classList.contains('hidden')) {
+                    window.openIssueModal(selectedModalIssueId);
+                }
+                
             }, (error) => {
                 console.error("Firestore error:", error);
                 window.showToast("Error loading issues.", "error");
