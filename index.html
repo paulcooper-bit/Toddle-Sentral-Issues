@@ -392,6 +392,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // IMPORTANT: Set your school's allowed email domains here
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
@@ -410,6 +411,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
         // Globals for access from inline HTML event handlers
@@ -430,7 +432,7 @@
         let showMyIssuesOnly = false;
 
         // Media State
-        let pendingMedia = { type: null, data: null, title: '' };
+        let pendingMedia = { type: null, file: null, data: null, title: '' };
         let mediaRecorder = null;
         let recordedChunks = [];
         let studioRecordingBlob = null;
@@ -691,7 +693,7 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    pendingMedia = { type: 'image', data: e.target.result, title: file.name };
+                    pendingMedia = { type: 'image', file: file, data: e.target.result, title: file.name };
                     document.getElementById('preview-title').innerText = file.name;
                     document.getElementById('media-preview-area').classList.remove('hidden');
                 };
@@ -700,7 +702,7 @@
         };
 
         window.clearAttachments = function() {
-            pendingMedia = { type: null, data: null, title: '' };
+            pendingMedia = { type: null, file: null, data: null, title: '' };
             document.getElementById('media-preview-area').classList.add('hidden');
         };
 
@@ -758,7 +760,7 @@
                     studioRecordingBlob = new Blob(recordedChunks, { type: "video/webm" });
                     const reader = new FileReader();
                     reader.onloadend = function() {
-                        pendingMedia = { type: 'video', data: reader.result, title: 'Screen_Recording.webm' };
+                        pendingMedia = { type: 'video', file: studioRecordingBlob, data: reader.result, title: 'Screen_Recording.webm' };
                         document.getElementById('preview-title').innerText = pendingMedia.title;
                         document.getElementById('media-preview-area').classList.remove('hidden');
                     };
@@ -1024,17 +1026,32 @@
                     return;
                 }
 
-                const newIssue = {
-                    title, system, subject, reporter, email, description,
-                    date: new Date().toISOString(),
-                    status: "Open", notes: "", upvotes: 1,
-                    mediaUrl: pendingMedia.data || null,
-                    mediaType: pendingMedia.type || null,
-                    authorUid: auth.currentUser.uid, 
-                    upvotedBy: [auth.currentUser.uid] 
-                };
+                // Show loading state on button during upload
+                const originalBtnText = newSubmitBtn.innerHTML;
+                newSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Uploading...';
+                newSubmitBtn.disabled = true;
+                newSubmitBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
                 try {
+                    let finalMediaUrl = null;
+                    
+                    // If they attached a file, upload it to Firebase Storage first!
+                    if (pendingMedia.file) {
+                        const storageRef = ref(storage, `issues/${Date.now()}_${pendingMedia.title}`);
+                        await uploadBytes(storageRef, pendingMedia.file);
+                        finalMediaUrl = await getDownloadURL(storageRef);
+                    }
+
+                    const newIssue = {
+                        title, system, subject, reporter, email, description,
+                        date: new Date().toISOString(),
+                        status: "Open", notes: "", upvotes: 1,
+                        mediaUrl: finalMediaUrl, // Using the short URL instead of the giant base64 text
+                        mediaType: pendingMedia.type || null,
+                        authorUid: auth.currentUser.uid, 
+                        upvotedBy: [auth.currentUser.uid] 
+                    };
+
                     const issuesRef = collection(db, 'issues');
                     await addDoc(issuesRef, newIssue);
                     
@@ -1051,6 +1068,11 @@
                 } catch (err) {
                     console.error(err);
                     window.showToast("Error submitting issue.", 'error');
+                } finally {
+                    // Restore button state
+                    newSubmitBtn.innerHTML = originalBtnText;
+                    newSubmitBtn.disabled = false;
+                    newSubmitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                 }
             });
         }
