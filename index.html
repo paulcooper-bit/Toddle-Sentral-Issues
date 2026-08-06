@@ -734,7 +734,7 @@
                 let voiceStream = null;
                 
                 try {
-                    // Ask for Mic First
+                    // 1. ASK FOR MICROPHONE FIRST
                     try {
                         voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         voiceStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
@@ -743,7 +743,7 @@
                         window.showToast("Recording without microphone audio.", "warning");
                     }
 
-                    // Ask for Screen Second
+                    // 2. ASK FOR SCREEN SECOND
                     const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                     displayStream.getTracks().forEach(track => combinedStream.addTrack(track));
 
@@ -751,15 +751,18 @@
                     if (voiceStream) {
                         voiceStream.getTracks().forEach(track => track.stop());
                     }
+                    
                     if (err.name === 'NotAllowedError' || err.message.includes('Permission denied')) {
                         window.showToast("Screen recording cancelled.", "warning");
-                        return;
+                        return; // Stop the process
                     }
+                    
                     console.log("Real screen recording blocked, using mock canvas fallback.");
                     combinedStream = await mockScreenRecord();
                 }
 
                 recordedChunks = [];
+                // 3. Record the combined screen and microphone stream
                 mediaRecorder = new MediaRecorder(combinedStream);
                 mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
                 
