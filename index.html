@@ -728,16 +728,32 @@
 
         window.startStudioRecord = async function() {
             try {
-                let stream;
+                let combinedStream;
                 try {
-                    stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    // 1. Get the screen video
+                    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    combinedStream = new MediaStream(displayStream.getTracks());
+                    
+                    // 2. Ask for Microphone audio so they can narrate the bug
+                    try {
+                        const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        // Add the microphone audio track to our screen recording stream
+                        voiceStream.getAudioTracks().forEach(track => {
+                            combinedStream.addTrack(track);
+                        });
+                    } catch (micErr) {
+                        console.warn("Microphone denied or unavailable. Recording without voiceover.");
+                        window.showToast("Recording screen without microphone audio.", "warning");
+                    }
+
                 } catch (err) {
                     console.log("Real screen recording blocked, using mock canvas fallback.");
-                    stream = await mockScreenRecord();
+                    combinedStream = await mockScreenRecord();
                 }
 
                 recordedChunks = [];
-                mediaRecorder = new MediaRecorder(stream);
+                // 3. Record the combined video + microphone stream
+                mediaRecorder = new MediaRecorder(combinedStream);
                 mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
                 
                 mediaRecorder.onstop = () => {
