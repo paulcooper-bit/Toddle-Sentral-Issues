@@ -61,7 +61,6 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <!-- In-App Notification Bell -->
                     <div class="relative flex items-center">
                         <button onclick="toggleNotifications()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
                             <i class="fa-solid fa-bell text-xl"></i>
@@ -142,6 +141,15 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
+                            <!-- Category Filter Added Here -->
+                            <select id="filter-category" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium">
+                                <option value="ALL">All Categories</option>
+                                <option value="Support">Support/Queries</option>
+                                <option value="Bug">Bug/Broken</option>
+                                <option value="Feature">Feature/Idea</option>
+                                <option value="Training">Training</option>
+                            </select>
+
                             <select id="filter-subject" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium">
                                 <option value="ALL">All Subjects</option>
                                 <option value="General">General</option>
@@ -213,12 +221,23 @@
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Issue Title *</label>
                         <input type="text" id="form-title" required oninput="checkSmartDuplicates()" placeholder="Short summary" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     </div>
+
+                    <!-- Category Field Added Here -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Category *</label>
+                        <select id="form-category" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                            <option value="" disabled selected hidden>Select Category...</option>
+                            <option value="Support">Support for setup, data updates and fixes, or general queries</option>
+                            <option value="Bug">Something’s broken or not behaving as expected</option>
+                            <option value="Feature">A new idea or improvement suggestion</option>
+                            <option value="Training">Would like a quick training or support session</option>
+                        </select>
+                    </div>
                     
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">System *</label>
                             <select id="form-system" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-                                <!-- Forced Blank Default Option -->
                                 <option value="" disabled selected hidden>Select System...</option>
                                 <option value="Toddle">Toddle</option>
                                 <option value="Sentral">Sentral</option>
@@ -228,7 +247,6 @@
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Department *</label>
                             <select id="form-subject" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-                                <!-- Forced Blank Default Option -->
                                 <option value="" disabled selected hidden>Select Department...</option>
                                 <option value="General">General</option>
                                 <option value="Core">Core</option>
@@ -266,7 +284,7 @@
                             <span class="text-[10px] text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">Optional</span>
                         </div>
                         
-                        <!-- Media Upload Buttons -->
+                        <!-- Media Upload Buttons (Either/Or) -->
                         <div id="media-upload-buttons" class="grid grid-cols-2 gap-2">
                             <button type="button" onclick="startStudioRecord()" id="btn-start-rec" class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold py-2 rounded flex flex-col items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition">
                                 <i class="fa-solid fa-video text-indigo-500 mb-1 text-lg"></i>
@@ -307,16 +325,16 @@
 
     </main>
 
-    <!-- Issue Details Modal -->
     <div id="issue-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span id="modal-category-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-sky-600 text-white">Category</span>
                     <span id="modal-subject-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-indigo-500 text-white">Subject</span>
                     <span id="modal-system-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-700 text-slate-200">System</span>
                     <span id="modal-id" class="text-xs text-slate-400 font-mono hidden sm:inline">#ID</span>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg ml-3"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1">
@@ -376,16 +394,14 @@
         </div>
     </div>
 
-    <!-- Firebase Configuration & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // Security Configuration
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
-        const ADMIN_EMAILS = ["paul.cooper@online.island.edu.hk"]; // Owner & Admin can delete/edit!
+        const ADMIN_EMAILS = ["paul.cooper@online.island.edu.hk"];
 
         const firebaseConfig = {
             apiKey: "AIzaSyBHr4oR89Q4hEMa-mF111e_WQez17y0lrs",
@@ -410,7 +426,7 @@
         window.doc = doc;
         window.deleteDoc = deleteDoc;
 
-        window.editingIssueId = null; // Global tracker for Edit mode
+        window.editingIssueId = null; 
         let isGridMode = true;
         let selectedModalIssueId = null;
         let unsubscribeIssues = null;
@@ -466,7 +482,6 @@
                 container.classList.add('hidden');
                 container.classList.remove('block');
 
-                // If they cancel out of editing mode, reset the form cleanly back to "Submit New"
                 if (window.editingIssueId) {
                     window.editingIssueId = null;
                     document.getElementById('issue-form').reset();
@@ -474,12 +489,11 @@
                     document.getElementById('submit-issue-btn').innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> Submit Issue';
                     window.clearAttachments();
                     
-                    // Keep reporter/email autofilled
                     document.getElementById('form-reporter').value = auth.currentUser?.displayName || '';
                     document.getElementById('form-email').value = auth.currentUser?.email || '';
 
-                    // Clear any red highlights
-                    const requiredFieldIds = ['form-title', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
+                    // Add Category field to highlight resets
+                    const requiredFieldIds = ['form-title', 'form-category', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
                     requiredFieldIds.forEach(id => {
                         const el = document.getElementById(id);
                         if(el) {
@@ -562,6 +576,7 @@
 
         window.renderIssues = function() {
             const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+            const categoryFilter = document.getElementById('filter-category')?.value || 'ALL';
             const subject = document.getElementById('filter-subject')?.value || 'ALL';
             const system = document.getElementById('filter-system')?.value || 'ALL';
             const status = document.getElementById('filter-status')?.value || 'ALL';
@@ -570,6 +585,7 @@
                 const matchSearch = (item.title || '').toLowerCase().includes(search) || 
                                     (item.description || '').toLowerCase().includes(search) || 
                                     (item.reporter || '').toLowerCase().includes(search);
+                const matchCategory = (categoryFilter === 'ALL') || (item.category === categoryFilter);
                 const matchSubj = (subject === 'ALL') || (item.subject === subject);
                 const matchSys = (system === 'ALL') || (item.system === system);
                 const matchStatus = (status === 'ALL') || (item.status === status);
@@ -580,7 +596,7 @@
                     matchMyIssues = (item.authorUid === uid) || (item.upvotedBy && item.upvotedBy.includes(uid));
                 }
 
-                return matchSearch && matchSubj && matchSys && matchStatus && matchMyIssues;
+                return matchSearch && matchCategory && matchSubj && matchSys && matchStatus && matchMyIssues;
             });
 
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -603,10 +619,12 @@
                     const card = document.createElement('div');
                     card.className = "bg-white rounded-xl shadow-xs border border-slate-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between overflow-hidden group";
                     card.onclick = () => window.openIssueModal(item.id);
+                    // Add Category badge to the card
                     card.innerHTML = `
                         <div class="p-4 space-y-3">
                             <div class="flex items-center justify-between text-xs">
-                                <div class="flex items-center space-x-1.5">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="px-2 py-0.5 rounded font-semibold bg-sky-50 text-sky-600 border border-sky-100">${item.category || 'General'}</span>
                                     <span class="px-2 py-0.5 rounded font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">${item.subject}</span>
                                     <span class="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-600">${item.system}</span>
                                 </div>
@@ -631,6 +649,7 @@
                     <table class="w-full text-left text-xs text-slate-700">
                         <thead class="bg-slate-100 uppercase text-[10px] font-bold text-slate-500 border-b border-slate-200">
                             <tr>
+                                <th class="p-3">Category</th>
                                 <th class="p-3">Department</th>
                                 <th class="p-3">Title</th>
                                 <th class="p-3">System</th>
@@ -644,6 +663,7 @@
                 filtered.forEach(item => {
                     tableHTML += `
                         <tr onclick="window.openIssueModal('${item.id}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
+                            <td class="p-3 font-medium text-sky-700">${item.category || 'General'}</td>
                             <td class="p-3 font-semibold"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">${item.subject}</span></td>
                             <td class="p-3 font-medium text-slate-800 max-w-xs truncate">${item.title}</td>
                             <td class="p-3">${item.system}</td>
@@ -708,7 +728,7 @@
                     pendingMedia = { type: 'image', file: file, data: e.target.result, title: file.name };
                     document.getElementById('preview-title').innerText = file.name;
                     document.getElementById('media-preview-area').classList.remove('hidden');
-                    document.getElementById('media-upload-buttons').classList.add('hidden'); // Enforce "Either/Or" rule
+                    document.getElementById('media-upload-buttons').classList.add('hidden');
                 };
                 reader.readAsDataURL(file);
             }
@@ -717,7 +737,7 @@
         window.clearAttachments = function() {
             pendingMedia = { type: null, file: null, data: null, title: '' };
             document.getElementById('media-preview-area').classList.add('hidden');
-            document.getElementById('media-upload-buttons').classList.remove('hidden'); // Show both buttons again
+            document.getElementById('media-upload-buttons').classList.remove('hidden'); 
         };
 
         async function mockScreenRecord() {
@@ -762,7 +782,7 @@
                 let voiceStream = null;
                 
                 try {
-                    // 1. Ask for Microphone FIRST! 
+                    // Ask for Mic First
                     try {
                         voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         voiceStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
@@ -771,7 +791,7 @@
                         window.showToast("Recording without microphone audio.", "warning");
                     }
 
-                    // 2. Ask for Screen SECOND
+                    // Ask for Screen Second
                     const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                     displayStream.getTracks().forEach(track => combinedStream.addTrack(track));
 
@@ -798,7 +818,7 @@
                         pendingMedia = { type: 'video', file: studioRecordingBlob, data: reader.result, title: 'Screen_Recording.webm' };
                         document.getElementById('preview-title').innerText = pendingMedia.title;
                         document.getElementById('media-preview-area').classList.remove('hidden');
-                        document.getElementById('media-upload-buttons').classList.add('hidden'); // Enforce "Either/Or" rule
+                        document.getElementById('media-upload-buttons').classList.add('hidden'); 
                     };
                     reader.readAsDataURL(studioRecordingBlob);
                     
@@ -842,6 +862,7 @@
 
             selectedModalIssueId = id;
             document.getElementById('modal-id').innerText = item.id.substring(0, 8) + '...';
+            document.getElementById('modal-category-badge').innerText = item.category || 'General';
             document.getElementById('modal-subject-badge').innerText = item.subject;
             document.getElementById('modal-system-badge').innerText = item.system;
             document.getElementById('modal-title').innerText = item.title;
@@ -866,7 +887,6 @@
                 mediaContainer.innerHTML = '';
             }
 
-            // Build real-time chat interface inside modal
             const chatThread = document.getElementById('modal-chat-thread');
             chatThread.innerHTML = '';
             
@@ -896,7 +916,6 @@
                 setTimeout(() => { chatThread.scrollTop = chatThread.scrollHeight; }, 10);
             }
 
-            // Secure Edit & Delete Button Visibility
             const editBtn = document.getElementById('modal-edit-btn');
             const deleteBtn = document.getElementById('modal-delete-btn');
             const currentUser = window.auth.currentUser;
@@ -924,20 +943,19 @@
             selectedModalIssueId = null;
         };
 
-        // NEW: Load existing issue into the form for updating
         window.startEditIssue = function(id) {
             const item = window.issues.find(i => i.id === id);
             if (!item) return;
 
-            window.editingIssueId = id; // Flag that we are currently editing
+            window.editingIssueId = id; 
             
-            // Populate the form fields with existing data
             document.getElementById('form-title').value = item.title;
+            // Add Category to edit loading logic
+            document.getElementById('form-category').value = item.category || ''; 
             document.getElementById('form-system').value = item.system;
             document.getElementById('form-subject').value = item.subject;
             document.getElementById('form-description').value = item.description;
 
-            // Change UI text to indicate updating
             document.getElementById('form-header-title').innerText = "Edit Issue";
             document.getElementById('submit-issue-btn').innerHTML = '<i class="fa-solid fa-save mr-2"></i> Update Issue';
 
@@ -950,11 +968,9 @@
             }
         };
 
-        // Handle the Delete process
         window.requestDeleteIssue = async function(id) {
             const btn = document.getElementById('modal-delete-btn');
             if (btn.innerText === 'Delete') {
-                // Double-tap safety check
                 btn.innerText = 'Confirm Delete';
                 btn.classList.replace('bg-red-100', 'bg-red-600');
                 btn.classList.replace('text-red-700', 'text-white');
@@ -967,7 +983,6 @@
                     }
                 }, 3000);
             } else {
-                // Execute Deletion
                 clearTimeout(deleteTimeout);
                 btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
                 try {
@@ -982,7 +997,6 @@
             }
         };
 
-        // Chat functionality: Status changes
         window.updateIssueStatus = async function() {
             if (!selectedModalIssueId || !window.auth.currentUser) return;
             const newStatus = document.getElementById('modal-status-select').value;
@@ -1007,7 +1021,6 @@
             }
         };
 
-        // Chat functionality: Sending messages
         window.postChatMessage = async function() {
             if (!selectedModalIssueId || !window.auth.currentUser) return;
             const inputEl = document.getElementById('modal-chat-input');
@@ -1063,16 +1076,18 @@
             }
         };
 
+        // Added Category to CSV export
         window.exportToCSV = function() {
             if (!window.issues || window.issues.length === 0) {
                 window.showToast("No issues to export.", "warning");
                 return;
             }
             
-            let csvContent = "data:text/csv;charset=utf-8,ID,Title,System,Subject,Reporter,Date,Status,Upvotes\n";
+            let csvContent = "data:text/csv;charset=utf-8,ID,Category,Title,System,Subject,Reporter,Date,Status,Upvotes\n";
             window.issues.forEach(i => {
                 const row = [
                     i.id || "N/A",
+                    `"${i.category || ''}"`,
                     `"${(i.title || '').replace(/"/g, '""')}"`,
                     `"${i.system || ''}"`,
                     `"${i.subject || ''}"`,
@@ -1167,8 +1182,8 @@
             const newSubmitBtn = submitBtn.cloneNode(true);
             submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
 
-            // HIGHLIGHT LOGIC: Setup automatic removal of red highlights when they select/type
-            const requiredFieldIds = ['form-title', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
+            // HIGHLIGHT LOGIC: Including 'form-category'
+            const requiredFieldIds = ['form-title', 'form-category', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
             requiredFieldIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -1186,10 +1201,9 @@
                 let isValid = true;
                 let firstInvalidElement = null;
 
-                // HIGHLIGHT LOGIC: Validate fields and color them red if blank
                 requiredFieldIds.forEach(id => {
                     const el = document.getElementById(id);
-                    if (!el.value) { // Checking if the value is completely empty
+                    if (!el.value) { 
                         isValid = false;
                         el.classList.remove('border-slate-300', 'focus:ring-indigo-500');
                         el.classList.add('border-red-500', 'focus:ring-red-500', 'bg-red-50');
@@ -1204,6 +1218,7 @@
                 }
 
                 const title = document.getElementById('form-title').value;
+                const category = document.getElementById('form-category').value; // Get Category Value
                 const system = document.getElementById('form-system').value;
                 const subject = document.getElementById('form-subject').value;
                 const reporter = document.getElementById('form-reporter').value;
@@ -1227,13 +1242,10 @@
                         finalMediaType = pendingMedia.type;
                     }
 
-                    // CHECK IF EDITING OR NEW
                     if (window.editingIssueId) {
-                        // Editing existing document
                         const docRef = window.doc(window.db, 'issues', window.editingIssueId);
-                        const updatePayload = { title, system, subject, description };
+                        const updatePayload = { title, category, system, subject, description };
                         
-                        // If new media was added during edit, overwrite the old media
                         if (finalMediaUrl) {
                             updatePayload.mediaUrl = finalMediaUrl;
                             updatePayload.mediaType = finalMediaType;
@@ -1243,9 +1255,8 @@
                         window.showToast("Issue updated successfully!", 'success');
                         
                     } else {
-                        // Creating brand new document
                         const newIssue = {
-                            title, system, subject, reporter, email, description,
+                            title, category, system, subject, reporter, email, description,
                             date: new Date().toISOString(),
                             status: "Open", notes: "", upvotes: 1, comments: [],
                             mediaUrl: finalMediaUrl,
@@ -1259,7 +1270,6 @@
                         window.showToast("Issue reported successfully!", 'success');
                     }
                     
-                    // Reset UI exactly back to 'New Report' mode
                     window.editingIssueId = null;
                     document.getElementById('form-header-title').innerText = "Submit New Issue";
                     document.getElementById('issue-form').reset();
@@ -1279,7 +1289,7 @@
                     
                     const container = document.getElementById('form-container');
                     if (!container.classList.contains('hidden')) {
-                        window.toggleMobileForm(); // Close form
+                        window.toggleMobileForm(); 
                     }
                     
                 } catch (err) {
@@ -1323,7 +1333,6 @@
                 window.updateStats();
                 window.renderIssues();
                 
-                // Real-time UI refresh for open modal chat
                 if (selectedModalIssueId && !document.getElementById('issue-modal').classList.contains('hidden')) {
                     window.openIssueModal(selectedModalIssueId);
                 }
