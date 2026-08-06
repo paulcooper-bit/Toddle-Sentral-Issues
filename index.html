@@ -30,13 +30,18 @@
             </div>
             <div>
                 <h2 class="text-2xl font-bold text-slate-800">Staff Portal Login</h2>
-                <p class="text-sm text-slate-500 mt-2">Please sign in with your Google account to access the IT Issue Tracker.</p>
+                <p class="text-sm text-slate-500 mt-2">Please sign in with your school Google account to access the IT Issue Tracker.</p>
             </div>
+            
+            <!-- Error message container for domain restrictions -->
+            <div id="login-error-msg" class="hidden bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span id="login-error-text">Access denied.</span>
+            </div>
+
             <button onclick="signInWithGoogle()" class="w-full bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center space-x-3 shadow-sm">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
                 <span>Sign in with Google</span>
             </button>
-            <!-- Optional: You can easily add a domain check in the code to restrict this later -->
         </div>
     </div>
 
@@ -56,23 +61,30 @@
                     </div>
                 </div>
 
-                <!-- In-App Notification Bell -->
-                <div class="relative flex items-center">
-                    <button onclick="toggleNotifications()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
-                        <i class="fa-solid fa-bell text-xl"></i>
-                        <span id="notification-badge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-indigo-900">0</span>
-                    </button>
-                    
-                    <!-- Notification Dropdown -->
-                    <div id="notification-panel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
-                        <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
-                            <h3 class="text-sm font-bold text-slate-800">Notifications</h3>
-                            <button onclick="requestPushPermissions()" class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold hover:bg-indigo-200 transition shadow-xs"><i class="fa-solid fa-bolt mr-1"></i>Enable Push Alerts</button>
-                        </div>
-                        <div id="notification-list" class="max-h-64 overflow-y-auto custom-scrollbar p-2 space-y-1">
-                            <div class="text-center p-4 text-xs text-slate-500">No new notifications.</div>
+                <div class="flex items-center space-x-4">
+                    <!-- In-App Notification Bell -->
+                    <div class="relative flex items-center">
+                        <button onclick="toggleNotifications()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
+                            <i class="fa-solid fa-bell text-xl"></i>
+                            <span id="notification-badge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-indigo-900">0</span>
+                        </button>
+                        
+                        <!-- Notification Dropdown -->
+                        <div id="notification-panel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
+                                <h3 class="text-sm font-bold text-slate-800">Notifications</h3>
+                                <button onclick="requestPushPermissions()" class="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-1 rounded font-bold hover:bg-indigo-200 transition shadow-xs"><i class="fa-solid fa-bolt mr-1"></i>Enable Push Alerts</button>
+                            </div>
+                            <div id="notification-list" class="max-h-64 overflow-y-auto custom-scrollbar p-2 space-y-1">
+                                <div class="text-center p-4 text-xs text-slate-500">No new notifications.</div>
+                            </div>
                         </div>
                     </div>
+                    
+                    <!-- Sign Out Button -->
+                    <button onclick="signOutUser()" class="text-indigo-200 hover:text-white transition text-sm font-medium">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sign Out
+                    </button>
                 </div>
             </div>
         </div>
@@ -178,7 +190,7 @@
                             </div>
 
                             <!-- Export CSV Button -->
-                            <button onclick="exportToCSV()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center shadow-xs">
+                            <button onclick="window.exportToCSV()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center shadow-xs">
                                 <i class="fa-solid fa-download mr-1.5"></i> Export CSV
                             </button>
                         </div>
@@ -194,12 +206,12 @@
                 </div>
             </section>
 
-            <!-- Right Side: Report Form (Hidden by default on mobile) -->
-            <section id="form-container" class="w-full lg:w-[400px] hidden flex-shrink-0 lg:block transition-all duration-300 bg-white rounded-xl shadow-md border border-slate-200">
+            <!-- Right Side: Report Form (Hidden by default) -->
+            <section id="form-container" class="w-full lg:w-[400px] hidden flex-shrink-0 transition-all duration-300 bg-white rounded-xl shadow-md border border-slate-200">
                 <form id="issue-form" class="p-5 space-y-5">
                     <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="text-base font-bold text-slate-800">Submit New Issue</h2>
-                        <button type="button" onclick="toggleMobileForm()" class="lg:hidden text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        <button type="button" onclick="toggleMobileForm()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
 
                     <!-- Live Duplicate Detection Alert Box -->
@@ -215,6 +227,32 @@
                         <input type="text" id="form-title" required oninput="checkSmartDuplicates()" placeholder="Short summary" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     </div>
                     
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">System *</label>
+                            <select id="form-system" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                <option value="Toddle">Toddle</option>
+                                <option value="Sentral">Sentral</option>
+                                <option value="Both">Both / Sync</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Department *</label>
+                            <select id="form-subject" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                                <option value="General">General</option>
+                                <option value="Core">Core</option>
+                                <option value="Arts">Arts</option>
+                                <option value="DT">DT</option>
+                                <option value="English">English</option>
+                                <option value="I_S">I & S</option>
+                                <option value="Languages">Languages</option>
+                                <option value="Maths">Maths</option>
+                                <option value="PE">PE</option>
+                                <option value="Science">Science</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Reporter Name *</label>
@@ -350,10 +388,13 @@
     <!-- Firebase Configuration & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Your real Firebase Keys!
+        // IMPORTANT: Set your school's allowed email domains here
+        const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
+
+        // Real Firebase Keys configured by user
         const firebaseConfig = {
             apiKey: "AIzaSyBHr4oR89Q4hEMa-mF111e_WQez17y0lrs",
             authDomain: "toddle-sentral-issues.firebaseapp.com",
@@ -376,7 +417,6 @@
         window.updateDoc = updateDoc;
         window.doc = doc;
 
-        let activeTab = 'browse';
         let isGridMode = true;
         let selectedModalIssueId = null;
         let unsubscribeIssues = null;
@@ -484,7 +524,6 @@
                 </div>`;
             });
             
-            // Trigger Native Browser Push Notification (Feature 3)
             if ("Notification" in window && Notification.permission === "granted") {
                 new Notification("IT Portal Update", { body: message });
             }
@@ -519,7 +558,6 @@
                 const matchSys = (system === 'ALL') || (item.system === system);
                 const matchStatus = (status === 'ALL') || (item.status === status);
                 
-                // Feature 2: My Issues filter logic
                 let matchMyIssues = true;
                 if (showMyIssuesOnly && window.auth.currentUser) {
                     const uid = window.auth.currentUser.uid;
@@ -529,7 +567,6 @@
                 return matchSearch && matchSubj && matchSys && matchStatus && matchMyIssues;
             });
 
-            // Sort by date descending in memory to satisfy Rule 2 (no complex DB queries)
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const container = document.getElementById('issues-container');
@@ -665,7 +702,6 @@
             document.getElementById('media-preview-area').classList.add('hidden');
         };
 
-        // Fallback mockup screen recorder for iframe environments where getDisplayMedia is blocked
         async function mockScreenRecord() {
             let canvas = document.getElementById('mock-recorder-canvas');
             if (!canvas) {
@@ -685,7 +721,7 @@
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(0,0, canvas.width, canvas.height);
                 ctx.fillStyle = '#334155';
-                ctx.fillRect(50, 50, 200, 100); // mock window
+                ctx.fillRect(50, 50, 200, 100); 
                 ctx.fillStyle = '#38bdf8';
                 ctx.beginPath();
                 ctx.arc(150 + Math.sin(frame*0.05)*100, 100, 10, 0, Math.PI*2);
@@ -706,7 +742,6 @@
             try {
                 let stream;
                 try {
-                    // Try real screen capture first (works on real deployment)
                     stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                 } catch (err) {
                     console.log("Real screen recording blocked, using mock canvas fallback.");
@@ -815,14 +850,12 @@
                 window.closeModal();
                 window.showToast(`Issue status updated to '${newStatus}'.`, 'success');
                 
-                // Simulate backend email trigger notification
                 if (item && item.email) {
                     setTimeout(() => {
                         window.showToast(`Automated update email sent to ${item.email}!`, 'info');
                     }, 1200);
                 }
                 
-                // Feature 4: Bulk "Upvoter" Broadcasts
                 if (newStatus === 'Resolved' && item && item.upvotes > 1) {
                     setTimeout(() => {
                         window.showToast(`Bulk Broadcast: Instant alerts sent to ${item.upvotes} staff members who upvoted this issue!`, 'success');
@@ -893,36 +926,76 @@
             window.showToast("Data exported to CSV!", "success");
         };
 
+        // UI function to show login errors
+        function showLoginError(message) {
+            const errorBox = document.getElementById('login-error-msg');
+            const errorText = document.getElementById('login-error-text');
+            if (errorBox && errorText) {
+                errorText.innerText = message;
+                errorBox.classList.remove('hidden');
+            }
+        }
+
         window.signInWithGoogle = async function() {
             try {
+                // Clear any previous errors
+                const errorBox = document.getElementById('login-error-msg');
+                if (errorBox) errorBox.classList.add('hidden');
+                
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login error:", error);
                 if (error.code === 'auth/unauthorized-domain') {
-                    window.showToast("Security Block: Please add this website's URL to Firebase Console > Authentication > Settings > Authorized Domains.", "error");
+                    showLoginError("This URL is not authorized for login. Ensure you have added your GitHub Pages domain to the Firebase Console -> Authentication -> Settings -> Authorized Domains.");
                 } else {
-                    window.showToast("Failed to sign in. " + error.message, "error");
+                    showLoginError("Failed to sign in. " + error.message);
                 }
             }
         };
 
+        window.signOutUser = async function() {
+            try {
+                await signOut(auth);
+                window.showToast("Signed out successfully.", "info");
+            } catch (error) {
+                console.error("Sign out error", error);
+                window.showToast("Error signing out.", "error");
+            }
+        }
+
         async function initApp() {
-            // Listen for authentication state changes automatically
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, async (user) => {
+                const errorBox = document.getElementById('login-error-msg');
+                if (errorBox) errorBox.classList.add('hidden');
+
                 if (user) {
-                    // 1. User is signed in securely! Hide the login screen.
+                    // DOMAIN RESTRICTION CHECK
+                    // If the user's email does not end with any of the allowed domains, block them.
+                    const isDomainAllowed = user.email && ALLOWED_DOMAINS.some(domain => user.email.endsWith(domain));
+                    
+                    if (!isDomainAllowed) {
+                        console.warn(`Blocked login attempt from unauthorized domain: ${user.email}`);
+                        await signOut(auth); // Force them back out
+                        document.getElementById('login-overlay').classList.remove('hidden');
+                        showLoginError(`Access denied. You must use an authorized email address.`);
+                        return;
+                    }
+
+                    // User is verified and has the correct domain
                     document.getElementById('login-overlay').classList.add('hidden');
                     window.showToast(`Welcome, ${user.displayName}!`, 'success');
                     
-                    // 2. Auto-fill their name into the reporter field to save time
+                    // Auto-fill their name and email into the reporter fields
                     const reporterInput = document.getElementById('form-reporter');
-                    if(reporterInput) reporterInput.value = user.displayName;
+                    if(reporterInput && user.displayName) reporterInput.value = user.displayName;
+                    
+                    const emailInput = document.getElementById('form-email');
+                    if(emailInput && user.email) emailInput.value = user.email;
 
-                    // 3. Connect to the real database and setup the form
                     setupRealtimeListener();
                     setupFormSubmitListener();
                 } else {
-                    // User is signed out. Show login overlay.
+                    // Show login overlay if not logged in
                     document.getElementById('login-overlay').classList.remove('hidden');
                 }
             });
@@ -930,7 +1003,6 @@
 
         function setupFormSubmitListener() {
             const submitBtn = document.getElementById('submit-issue-btn');
-            // Clone and replace button to prevent duplicate listeners if re-authenticating
             const newSubmitBtn = submitBtn.cloneNode(true);
             submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
 
@@ -961,14 +1033,16 @@
                 };
 
                 try {
-                    // Save to the real 'issues' collection in your Firestore
                     const issuesRef = collection(db, 'issues');
                     await addDoc(issuesRef, newIssue);
+                    
                     document.getElementById('issue-form').reset();
                     window.clearAttachments();
                     
-                    // Keep the name auto-filled for convenience
+                    // Keep the name and email auto-filled for their next issue!
                     document.getElementById('form-reporter').value = auth.currentUser.displayName;
+                    const emailInput = document.getElementById('form-email');
+                    if(emailInput && auth.currentUser.email) emailInput.value = auth.currentUser.email;
                     
                     window.toggleMobileForm(); // Hide form
                     window.showToast("Issue reported successfully!", 'success');
@@ -981,10 +1055,9 @@
 
         function setupRealtimeListener() {
             if (unsubscribeIssues) {
-                unsubscribeIssues(); // Clear previous listener if any
+                unsubscribeIssues();
             }
             
-            // Query the real 'issues' collection
             const issuesQuery = query(collection(db, 'issues'));
             unsubscribeIssues = onSnapshot(issuesQuery, (snapshot) => {
                 const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
@@ -996,7 +1069,6 @@
                     const item = { id, ...data };
                     window.issues.push(item);
                     
-                    // Check for updates to trigger notifications (Features 2 & 3)
                     if (currentUserId && previousIssuesState[id]) {
                         const prev = previousIssuesState[id];
                         const isMine = (item.authorUid === currentUserId) || (item.upvotedBy && item.upvotedBy.includes(currentUserId));
