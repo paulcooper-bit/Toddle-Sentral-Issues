@@ -33,7 +33,6 @@
                 <p class="text-sm text-slate-500 mt-2">Please sign in with your school Google account to access the IT Issue Tracker.</p>
             </div>
             
-            <!-- Error message container for domain restrictions -->
             <div id="login-error-msg" class="hidden bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
                 <i class="fa-solid fa-triangle-exclamation mr-1"></i> <span id="login-error-text">Access denied.</span>
             </div>
@@ -69,7 +68,6 @@
                             <span id="notification-badge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-indigo-900">0</span>
                         </button>
                         
-                        <!-- Notification Dropdown -->
                         <div id="notification-panel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
                             <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
                                 <h3 class="text-sm font-bold text-slate-800">Notifications</h3>
@@ -81,7 +79,6 @@
                         </div>
                     </div>
                     
-                    <!-- Sign Out Button -->
                     <button onclick="signOutUser()" class="text-indigo-200 hover:text-white transition text-sm font-medium">
                         <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Sign Out
                     </button>
@@ -92,7 +89,6 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-        <!-- Stats Overview -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl shadow-xs border border-slate-200 flex items-center space-x-4">
                 <div class="p-3 bg-blue-50 text-blue-600 rounded-lg"><i class="fa-solid fa-layer-group text-xl"></i></div>
@@ -126,10 +122,8 @@
 
         <div class="flex flex-col lg:flex-row gap-6 items-start">
             
-            <!-- Left Side: Issues Directory -->
             <section id="view-browse" class="w-full lg:flex-1 space-y-4">
                 
-                <!-- Amber Warning / Action Banner -->
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-3">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-lightbulb text-amber-500 text-base flex-shrink-0"></i>
@@ -142,13 +136,11 @@
 
                 <div class="bg-white p-4 rounded-xl shadow-xs border border-slate-200 space-y-3">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                        <!-- Search Input -->
                         <div class="relative flex-1">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" id="search-input" oninput="renderIssues()" placeholder="Search existing issues by keyword, title..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
 
-                        <!-- Filter Dropdowns -->
                         <div class="flex flex-wrap items-center gap-2">
                             <select id="filter-subject" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium">
                                 <option value="ALL">All Subjects</option>
@@ -178,18 +170,15 @@
                                 <option value="Resolved">Resolved</option>
                             </select>
 
-                            <!-- My Issues Filter -->
                             <button id="btn-my-issues" onclick="toggleMyIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 text-slate-500 font-medium hover:bg-slate-100 transition flex items-center shadow-xs">
                                 <i class="fa-solid fa-user-tag mr-1.5"></i> My Issues
                             </button>
 
-                            <!-- Layout Toggle -->
                             <div class="border border-slate-200 rounded-lg p-1 bg-slate-100 flex items-center space-x-1">
                                 <button onclick="setGridMode(true)" id="btn-grid" class="p-1.5 rounded text-xs text-indigo-600 bg-white shadow-xs font-semibold"><i class="fa-solid fa-grip"></i></button>
                                 <button onclick="setGridMode(false)" id="btn-table" class="p-1.5 rounded text-xs text-slate-500 hover:text-slate-800"><i class="fa-solid fa-list"></i></button>
                             </div>
 
-                            <!-- Export CSV Button -->
                             <button onclick="window.exportToCSV()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-semibold px-3 py-1.5 rounded-lg text-xs transition flex items-center shadow-xs">
                                 <i class="fa-solid fa-download mr-1.5"></i> Export CSV
                             </button>
@@ -206,7 +195,6 @@
                 </div>
             </section>
 
-            <!-- Right Side: Report Form (Hidden by default) -->
             <section id="form-container" class="w-full lg:w-[400px] hidden flex-shrink-0 transition-all duration-300 bg-white rounded-xl shadow-md border border-slate-200">
                 <form id="issue-form" class="p-5 space-y-5">
                     <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
@@ -214,7 +202,6 @@
                         <button type="button" onclick="toggleMobileForm()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
 
-                    <!-- Live Duplicate Detection Alert Box -->
                     <div id="duplicate-warning" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
                         <div class="flex items-center text-red-800 font-bold text-xs">
                             <i class="fa-solid fa-triangle-exclamation text-red-500 mr-1.5"></i> Possible Duplicates Found
@@ -261,8 +248,9 @@
                             <input type="text" id="form-reporter" required placeholder="Staff Name" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Email (Auto-filled)</label>
-                            <input type="email" id="form-email" readonly placeholder="name@school.edu" class="w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-lg p-2 text-sm focus:outline-none cursor-not-allowed">
+                            <label class="block text-xs font-bold uppercase text-slate-600 mb-1 flex items-center">Email <i class="fa-solid fa-lock text-[10px] ml-1 text-slate-400" title="Auto-filled from Google Login"></i></label>
+                            <!-- Note: The email is now readonly and visually locked -->
+                            <input type="email" id="form-email" readonly placeholder="Auto-filled" class="w-full border border-slate-200 bg-slate-100 text-slate-500 rounded-lg p-2 text-sm focus:outline-none cursor-not-allowed">
                         </div>
                     </div>
 
@@ -271,7 +259,6 @@
                         <textarea id="form-description" required rows="3" placeholder="Steps to reproduce..." class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                     </div>
 
-                    <!-- Media Upload & Recording Section -->
                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 space-y-3">
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-bold uppercase text-slate-600">Visual Evidence</span>
@@ -279,12 +266,10 @@
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2">
-                            <!-- Screen Recorder -->
                             <button type="button" onclick="startStudioRecord()" id="btn-start-rec" class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold py-2 rounded flex flex-col items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition">
                                 <i class="fa-solid fa-video text-indigo-500 mb-1 text-lg"></i>
                                 Record Screen
                             </button>
-                            <!-- Image Upload -->
                             <label class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold py-2 rounded flex flex-col items-center justify-center hover:bg-slate-100 transition cursor-pointer">
                                 <i class="fa-solid fa-image text-slate-500 mb-1 text-lg"></i>
                                 Upload Image
@@ -292,13 +277,11 @@
                             </label>
                         </div>
 
-                        <!-- Mini Recorder UI (Hidden until activated) -->
                         <div id="recorder-ui" class="hidden flex flex-col items-center justify-center border-t border-slate-200 pt-2 space-y-2 mt-2">
                             <div class="flex items-center justify-between w-full">
                                 <span class="text-xs font-bold text-red-600 flex items-center animate-pulse"><div class="w-2 h-2 bg-red-600 rounded-full mr-1.5"></div> Recording: <span id="rec-timer" class="ml-1">00:00</span></span>
                                 <button type="button" onclick="stopStudioRecord()" id="btn-stop-rec" class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-sm hover:bg-red-700 transition">Stop & Save</button>
                             </div>
-                            <!-- Mock video element -->
                             <canvas id="mock-recorder-canvas" class="w-full h-24 bg-slate-900 rounded hidden"></canvas>
                         </div>
 
@@ -322,7 +305,6 @@
 
     </main>
 
-    <!-- Issue Details Modal -->
     <div id="issue-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
@@ -382,22 +364,25 @@
                 <button id="modal-upvote-btn" onclick="upvoteCurrentModalIssue()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-bold px-3 py-1.5 rounded-lg transition flex items-center">
                     <i class="fa-solid fa-thumbs-up mr-1.5"></i> +1 I Have This Issue Too (<span id="modal-upvote-count">0</span>)
                 </button>
-                <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+                <div class="flex space-x-2">
+                    <button id="modal-delete-btn" class="hidden px-4 py-1.5 bg-red-100 text-red-700 rounded-lg font-bold hover:bg-red-200 transition transition-colors duration-300">Delete</button>
+                    <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase Configuration & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Added deleteDoc
+        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // IMPORTANT: Set your school's allowed email domains here
+        // Security Configuration
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
+        const ADMIN_EMAILS = ["paul.cooper@online.island.edu.hk"]; // VIP Admin List
 
-        // Real Firebase Keys configured by user
         const firebaseConfig = {
             apiKey: "AIzaSyBHr4oR89Q4hEMa-mF111e_WQez17y0lrs",
             authDomain: "toddle-sentral-issues.firebaseapp.com",
@@ -414,24 +399,23 @@
         const storage = getStorage(app);
         const provider = new GoogleAuthProvider();
 
-        // Globals for access from inline HTML event handlers
         window.issues = [];
         window.db = db;
         window.auth = auth;
         window.updateDoc = updateDoc;
         window.doc = doc;
+        window.deleteDoc = deleteDoc; // Exported for inline HTML access
 
         let isGridMode = true;
         let selectedModalIssueId = null;
         let unsubscribeIssues = null;
+        let deleteTimeout = null;
 
-        // Notification & User Tracking State
         let previousIssuesState = {};
         let myNotifications = [];
         let unreadNotifications = 0;
         let showMyIssuesOnly = false;
 
-        // Media State
         let pendingMedia = { type: null, file: null, data: null, title: '' };
         let mediaRecorder = null;
         let recordedChunks = [];
@@ -831,12 +815,58 @@
                 mediaContainer.innerHTML = '';
             }
 
+            // Secure Delete Button Visualization
+            const deleteBtn = document.getElementById('modal-delete-btn');
+            const currentUser = window.auth.currentUser;
+            const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
+
+            if (currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.innerHTML = 'Delete';
+                deleteBtn.classList.replace('bg-red-600', 'bg-red-100');
+                deleteBtn.classList.replace('text-white', 'text-red-700');
+                deleteBtn.onclick = () => window.requestDeleteIssue(item.id);
+            } else {
+                deleteBtn.classList.add('hidden');
+            }
+
             document.getElementById('issue-modal').classList.remove('hidden');
         };
 
         window.closeModal = function() {
             document.getElementById('issue-modal').classList.add('hidden');
             selectedModalIssueId = null;
+        };
+
+        window.requestDeleteIssue = async function(id) {
+            const btn = document.getElementById('modal-delete-btn');
+            if (btn.innerText === 'Delete') {
+                // Safety Tap 1
+                btn.innerText = 'Confirm Delete';
+                btn.classList.replace('bg-red-100', 'bg-red-600');
+                btn.classList.replace('text-red-700', 'text-white');
+                
+                deleteTimeout = setTimeout(() => {
+                    if (btn) {
+                        btn.innerText = 'Delete';
+                        btn.classList.replace('bg-red-600', 'bg-red-100');
+                        btn.classList.replace('text-white', 'text-red-700');
+                    }
+                }, 3000);
+            } else {
+                // Confirmed execution
+                clearTimeout(deleteTimeout);
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i>';
+                try {
+                    await window.deleteDoc(window.doc(window.db, 'issues', id));
+                    window.closeModal();
+                    window.showToast("Issue deleted permanently.", "success");
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("Error deleting issue.", "error");
+                    btn.innerText = 'Delete';
+                }
+            }
         };
 
         window.saveModalStatusUpdate = async function() {
@@ -930,7 +960,6 @@
             window.showToast("Data exported to CSV!", "success");
         };
 
-        // UI function to show login errors
         function showLoginError(message) {
             const errorBox = document.getElementById('login-error-msg');
             const errorText = document.getElementById('login-error-text');
@@ -942,15 +971,13 @@
 
         window.signInWithGoogle = async function() {
             try {
-                // Clear any previous errors
                 const errorBox = document.getElementById('login-error-msg');
                 if (errorBox) errorBox.classList.add('hidden');
-                
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login error:", error);
                 if (error.code === 'auth/unauthorized-domain') {
-                    showLoginError("This URL is not authorized for login. Ensure you have added your GitHub Pages domain to the Firebase Console -> Authentication -> Settings -> Authorized Domains.");
+                    showLoginError("Security Block: Add your GitHub link to Firebase Console -> Authentication -> Settings -> Authorized Domains.");
                 } else {
                     showLoginError("Failed to sign in. " + error.message);
                 }
@@ -973,23 +1000,19 @@
                 if (errorBox) errorBox.classList.add('hidden');
 
                 if (user) {
-                    // DOMAIN RESTRICTION CHECK
-                    // If the user's email does not end with any of the allowed domains, block them.
                     const isDomainAllowed = user.email && ALLOWED_DOMAINS.some(domain => user.email.endsWith(domain));
                     
                     if (!isDomainAllowed) {
                         console.warn(`Blocked login attempt from unauthorized domain: ${user.email}`);
-                        await signOut(auth); // Force them back out
+                        await signOut(auth);
                         document.getElementById('login-overlay').classList.remove('hidden');
                         showLoginError(`Access denied. You must use an authorized email address.`);
                         return;
                     }
 
-                    // User is verified and has the correct domain
                     document.getElementById('login-overlay').classList.add('hidden');
                     window.showToast(`Welcome, ${user.displayName}!`, 'success');
                     
-                    // Auto-fill their name and email into the reporter fields
                     const reporterInput = document.getElementById('form-reporter');
                     if(reporterInput && user.displayName) reporterInput.value = user.displayName;
                     
@@ -999,7 +1022,6 @@
                     setupRealtimeListener();
                     setupFormSubmitListener();
                 } else {
-                    // Show login overlay if not logged in
                     document.getElementById('login-overlay').classList.remove('hidden');
                 }
             });
@@ -1026,7 +1048,6 @@
                     return;
                 }
 
-                // Show loading state on button during upload
                 const originalBtnText = newSubmitBtn.innerHTML;
                 newSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Uploading...';
                 newSubmitBtn.disabled = true;
@@ -1035,9 +1056,9 @@
                 try {
                     let finalMediaUrl = null;
                     
-                    // If they attached a file, upload it to Firebase Storage first!
                     if (pendingMedia.file) {
-                        const storageRef = ref(storage, `issues/${Date.now()}_${pendingMedia.title}`);
+                        const cleanTitle = pendingMedia.title.replace(/[^a-zA-Z0-9.]/g, '_');
+                        const storageRef = ref(storage, `issues/${Date.now()}_${cleanTitle}`);
                         await uploadBytes(storageRef, pendingMedia.file);
                         finalMediaUrl = await getDownloadURL(storageRef);
                     }
@@ -1046,7 +1067,7 @@
                         title, system, subject, reporter, email, description,
                         date: new Date().toISOString(),
                         status: "Open", notes: "", upvotes: 1,
-                        mediaUrl: finalMediaUrl, // Using the short URL instead of the giant base64 text
+                        mediaUrl: finalMediaUrl, 
                         mediaType: pendingMedia.type || null,
                         authorUid: auth.currentUser.uid, 
                         upvotedBy: [auth.currentUser.uid] 
@@ -1058,18 +1079,16 @@
                     document.getElementById('issue-form').reset();
                     window.clearAttachments();
                     
-                    // Keep the name and email auto-filled for their next issue!
                     document.getElementById('form-reporter').value = auth.currentUser.displayName;
                     const emailInput = document.getElementById('form-email');
                     if(emailInput && auth.currentUser.email) emailInput.value = auth.currentUser.email;
                     
-                    window.toggleMobileForm(); // Hide form
+                    window.toggleMobileForm(); 
                     window.showToast("Issue reported successfully!", 'success');
                 } catch (err) {
-                    console.error(err);
-                    window.showToast("Error submitting issue.", 'error');
+                    console.error("Submission Error: ", err);
+                    window.showToast("Error submitting issue: " + err.message, 'error');
                 } finally {
-                    // Restore button state
                     newSubmitBtn.innerHTML = originalBtnText;
                     newSubmitBtn.disabled = false;
                     newSubmitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
