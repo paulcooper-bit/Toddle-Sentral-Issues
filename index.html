@@ -728,25 +728,36 @@
 
         window.startStudioRecord = async function() {
             try {
-                let combinedStream;
+                let combinedStream = new MediaStream();
+                let voiceStream = null;
+                
                 try {
-                    // 1. Get the screen video
-                    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                    combinedStream = new MediaStream(displayStream.getTracks());
-                    
-                    // 2. Ask for Microphone audio so they can narrate the bug
+                    // 1. Ask for Microphone FIRST! 
+                    // This forces the "Allow" popup to appear while they are still looking at the portal
                     try {
-                        const voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        // Add the microphone audio track to our screen recording stream
-                        voiceStream.getAudioTracks().forEach(track => {
-                            combinedStream.addTrack(track);
-                        });
+                        voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        voiceStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
                     } catch (micErr) {
-                        console.warn("Microphone denied or unavailable. Recording without voiceover.");
-                        window.showToast("Recording screen without microphone audio.", "warning");
+                        console.warn("Microphone denied or unavailable.");
+                        window.showToast("Recording without microphone audio.", "warning");
                     }
 
+                    // 2. Ask for Screen SECOND
+                    // Once they select a screen here, the browser will jump to that tab, but the mic is already allowed!
+                    const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                    displayStream.getTracks().forEach(track => combinedStream.addTrack(track));
+
                 } catch (err) {
+                    // If they click "Cancel" on the screen share, stop the microphone immediately
+                    if (voiceStream) {
+                        voiceStream.getTracks().forEach(track => track.stop());
+                    }
+                    
+                    if (err.name === 'NotAllowedError' || err.message.includes('Permission denied')) {
+                        window.showToast("Screen recording cancelled.", "warning");
+                        return; // Stop the process
+                    }
+                    
                     console.log("Real screen recording blocked, using mock canvas fallback.");
                     combinedStream = await mockScreenRecord();
                 }
@@ -1048,9 +1059,41 @@
             const newSubmitBtn = submitBtn.cloneNode(true);
             submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
 
+            // Set up real-time clearing of red error highlights when user starts typing/selecting
+            const requiredFieldIds = ['form-title', 'form-system', 'form-subject', 'form-reporter', 'form-description'];
+            requiredFieldIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', () => {
+                        el.classList.remove('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                        el.classList.add('border-slate-300', 'focus:ring-indigo-500');
+                    });
+                }
+            });
+
             newSubmitBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 if (!auth.currentUser) return;
+
+                let isValid = true;
+                let firstInvalidElement = null;
+
+                // Check all required fields and highlight if empty
+                requiredFieldIds.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el.value) {
+                        isValid = false;
+                        el.classList.remove('border-slate-300', 'focus:ring-indigo-500');
+                        el.classList.add('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                        if (!firstInvalidElement) firstInvalidElement = el;
+                    }
+                });
+
+                if (!isValid) {
+                    window.showToast("Please complete the highlighted fields.", "warning");
+                    if (firstInvalidElement) firstInvalidElement.focus();
+                    return;
+                }
 
                 const title = document.getElementById('form-title').value;
                 const system = document.getElementById('form-system').value;
@@ -1058,11 +1101,6 @@
                 const reporter = document.getElementById('form-reporter').value;
                 const email = document.getElementById('form-email').value;
                 const description = document.getElementById('form-description').value;
-
-                if (!title || !reporter || !description || !system || !subject) {
-                    window.showToast("Please fill in all required fields.", "warning");
-                    return;
-                }
 
                 const originalBtnText = newSubmitBtn.innerHTML;
                 newSubmitBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-2"></i> Uploading...';
@@ -1095,6 +1133,15 @@
                     document.getElementById('issue-form').reset();
                     window.clearAttachments();
                     
+                    // Reset styling just in case
+                    requiredFieldIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if(el) {
+                            el.classList.remove('border-red-500', 'focus:ring-red-500', 'bg-red-50');
+                            el.classList.add('border-slate-300', 'focus:ring-indigo-500');
+                        }
+                    });
+
                     document.getElementById('form-reporter').value = auth.currentUser.displayName;
                     const emailInput = document.getElementById('form-email');
                     if(emailInput && auth.currentUser.email) emailInput.value = auth.currentUser.email;
