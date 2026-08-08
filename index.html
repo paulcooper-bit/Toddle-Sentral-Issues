@@ -1137,6 +1137,7 @@
             }
         };
 
+        // NEW: Chat Comment Notification Ping
         window.postChatMessage = async function() {
             if (!selectedModalIssueId || !window.auth.currentUser) return;
             const inputEl = document.getElementById('modal-chat-input');
@@ -1159,6 +1160,20 @@
             try {
                 inputEl.value = '';
                 await window.updateDoc(docRef, { comments: updatedComments });
+
+                // ASSIGNEE WEBHOOK ALERT: If this ticket is assigned to someone else, let them know in Google Chat!
+                const WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQAs764Ieo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=aL4JOipxSoMOXerjaf60PfmvZqmBZIKh0y9gP8ctZ2Y";
+                if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email && WEBHOOK_URL.includes("chat.googleapis.com")) {
+                    const chatPayload = {
+                        text: `<users/${item.assignedTo}> 💬 *New Comment on your assigned ticket: ${item.title}*\n\n*${window.auth.currentUser.displayName}:* ${text}`
+                    };
+                    fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(chatPayload)
+                    }).catch(err => console.error(err));
+                }
+
             } catch(e) {
                 console.error(e);
                 window.showToast("Failed to post comment.", "error");
@@ -1440,6 +1455,7 @@
             });
         }
 
+        // NEW: Live Comment Verification listener
         function setupRealtimeListener() {
             if (unsubscribeIssues) {
                 unsubscribeIssues();
@@ -1448,6 +1464,7 @@
             const issuesQuery = query(collection(db, 'issues'));
             unsubscribeIssues = onSnapshot(issuesQuery, (snapshot) => {
                 const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
+                const currentUserEmail = auth.currentUser ? auth.currentUser.email : null;
                 window.issues = [];
                 
                 snapshot.forEach(doc => {
@@ -1458,10 +1475,25 @@
                     
                     if (currentUserId && previousIssuesState[id]) {
                         const prev = previousIssuesState[id];
-                        const isMine = (item.authorUid === currentUserId) || (item.upvotedBy && item.upvotedBy.includes(currentUserId));
+                        // Verify if the current user "owns" or is assigned this ticket
+                        const isMine = (item.authorUid === currentUserId) || (item.upvotedBy && item.upvotedBy.includes(currentUserId)) || (item.assignedTo === currentUserEmail);
                         
-                        if (isMine && (prev.status !== item.status || prev.notes !== item.notes)) {
-                            window.addNotification(`Issue "${item.title}" was updated to: ${item.status}`);
+                        if (isMine) {
+                            // Check for Status Change
+                            if (prev.status !== item.status) {
+                                window.addNotification(`Issue "${item.title}" was updated to: ${item.status}`);
+                            }
+                            
+                            // Check for New Comments
+                            const prevComments = prev.comments || [];
+                            const currComments = item.comments || [];
+                            if (currComments.length > prevComments.length) {
+                                const latestComment = currComments[currComments.length - 1];
+                                // Send an in-app ping as long as the user didn't write the comment themselves
+                                if (latestComment.authorUid !== currentUserId) {
+                                    window.addNotification(`New comment on "${item.title}" from ${latestComment.author}`);
+                                }
+                            }
                         }
                     }
                     previousIssuesState[id] = item;
