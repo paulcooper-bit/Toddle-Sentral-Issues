@@ -83,14 +83,9 @@
                         <i class="fa-solid fa-gear text-xl"></i>
                     </button>
 
-                    <!-- NEW: Help / Quick Guide Button -->
-                    <button onclick="openHelpModal()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none" title="How to use this portal">
-                        <i class="fa-solid fa-circle-question text-xl"></i>
-                    </button>
-
                     <!-- In-App Notification Bell -->
-                    <div class="relative flex items-center" id="notification-wrapper">
-                        <button onclick="toggleNotifications(event)" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
+                    <div class="relative flex items-center">
+                        <button onclick="toggleNotifications()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
                             <i class="fa-solid fa-bell text-xl"></i>
                             <span id="notification-badge" class="hidden absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-indigo-900">0</span>
                         </button>
@@ -439,58 +434,6 @@
         </div>
     </div>
 
-    <!-- NEW: Quick Help / Instructions Modal -->
-    <div id="help-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-            <div class="bg-indigo-900 text-white px-6 py-4 flex items-center justify-between">
-                <h2 class="text-lg font-bold flex items-center"><i class="fa-solid fa-graduation-cap mr-2"></i> How to use this Portal</h2>
-                <button onclick="closeHelpModal()" class="text-indigo-200 hover:text-white text-lg transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-1 text-sm text-slate-700">
-                <p class="text-base text-slate-500 mb-2">Welcome to the IS Toddle / Sentral Issues Portal! Follow these quick steps to get help faster:</p>
-                
-                <div class="space-y-4">
-                    <div class="flex items-start bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0 mr-4">1</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Search Before You Submit</h3>
-                            <p>Before reporting a bug, use the search bar or filters to see if someone else has already reported it. This helps us avoid duplicate tickets and fix things faster.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0 mr-4">2</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Use the "+1" Button</h3>
-                            <p>If you find your issue is already listed, click on it and hit the <strong>"+1 I Have This Issue Too"</strong> button. You will automatically receive email updates when we reply to or resolve it!</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0 mr-4">3</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Submit a New Issue</h3>
-                            <p>If it's a new problem, click "Report New Issue". Please be as detailed as possible. You can even use the <strong>"Record Screen"</strong> button to easily show us exactly what is broken!</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <div class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center font-bold flex-shrink-0 mr-4">4</div>
-                        <div>
-                            <h3 class="font-bold text-slate-800 mb-1">Communicate</h3>
-                            <p>We will email you when we update your ticket. You can also click the red <strong>Notification Bell</strong> at the top right to see your latest updates and reply directly to our team in the chat thread.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-end">
-                <button onclick="closeHelpModal()" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition shadow-sm">Got it, thanks!</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Firebase Configuration & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -499,7 +442,7 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // IMPORTANT CONFIGURATION
-        const PORTAL_URL = "https://paulcooper-bit.github.io/Toddle-Sentral-Issues/"; 
+        const PORTAL_URL = "https://paulcooper-bit.github.io/Toddle-Sentral-Issues/"; // Change this if you use a custom domain
         const WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQAs764Ieo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=aL4JOipxSoMOXerjaf60PfmvZqmBZIKh0y9gP8ctZ2Y";
 
         // Security Configuration
@@ -554,27 +497,6 @@
         let studioTimerInterval = null;
         let studioSeconds = 0;
 
-        // NEW: Instructions Modal Logic
-        window.openHelpModal = function() {
-            document.getElementById('help-modal').classList.remove('hidden');
-        };
-
-        window.closeHelpModal = function() {
-            document.getElementById('help-modal').classList.add('hidden');
-            localStorage.setItem('has_seen_help_guide', 'true');
-        };
-
-        // NEW: Click Outside Listener to Close Notification Panel
-        document.addEventListener('click', function(event) {
-            const panel = document.getElementById('notification-panel');
-            const wrapper = document.getElementById('notification-wrapper');
-            if (panel && !panel.classList.contains('hidden')) {
-                if (!wrapper.contains(event.target)) {
-                    panel.classList.add('hidden');
-                }
-            }
-        });
-
         // Centralized Email Trigger Function
         async function sendEmailNotification(toEmail, subject, htmlMessage) {
             if (!toEmail) return;
@@ -606,6 +528,7 @@
             setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4000);
         };
 
+        // NEW: Global Outage Announcement Function
         window.setGlobalAnnouncement = async function() {
             const currentText = document.getElementById('global-announcement-text').innerText;
             const isHidden = document.getElementById('global-announcement').classList.contains('hidden');
@@ -652,9 +575,7 @@
         };
         window.setSort = function(column) { if (sortColumn === column) { sortAsc = !sortAsc; } else { sortColumn = column; sortAsc = true; } window.renderIssues(); };
 
-        // UPDATED: Toggle Notifications stop propagation to avoid immediate closing
-        window.toggleNotifications = function(event) {
-            if (event) event.stopPropagation();
+        window.toggleNotifications = function() {
             const panel = document.getElementById('notification-panel');
             panel.classList.toggle('hidden');
             if (!panel.classList.contains('hidden')) {
@@ -687,7 +608,7 @@
             const list = document.getElementById('notification-list');
             list.innerHTML = '';
             myNotifications.forEach(n => {
-                const clickAction = n.id ? `onclick="window.openIssueModal('${n.id}'); document.getElementById('notification-panel').classList.add('hidden');"` : '';
+                const clickAction = n.id ? `onclick="window.openIssueModal('${n.id}'); window.toggleNotifications();"` : '';
                 const pointerClass = n.id ? 'cursor-pointer hover:bg-indigo-100 transition' : '';
                 list.innerHTML += `<div ${clickAction} class="bg-indigo-50 p-2 rounded border border-indigo-100 text-xs text-indigo-900 mb-1 ${pointerClass}">
                     <span class="font-bold flex items-center"><i class="fa-solid fa-circle-info text-indigo-500 mr-1.5"></i> Status Update</span>
@@ -714,7 +635,7 @@
             const category = document.getElementById('filter-category')?.value || 'ALL';
             const subject = document.getElementById('filter-subject')?.value || 'ALL';
             const system = document.getElementById('filter-system')?.value || 'ALL';
-            const status = document.getElementById('filter-status')?.value || 'ACTIVE';
+            const status = document.getElementById('filter-status')?.value || 'ACTIVE'; // Changed default to Active
 
             let filtered = window.issues.filter(item => {
                 const matchSearch = (item.title || '').toLowerCase().includes(search) || (item.description || '').toLowerCase().includes(search) || (item.reporter || '').toLowerCase().includes(search);
@@ -722,6 +643,7 @@
                 const matchSubj = (subject === 'ALL') || (item.subject === subject);
                 const matchSys = (system === 'ALL') || (item.system === system);
                 
+                // Active vs All filtering logic
                 const matchStatus = (status === 'ALL') || 
                                     (status === 'ACTIVE' && item.status !== 'Resolved') || 
                                     (item.status === status);
@@ -933,11 +855,13 @@
 
             if (isAdmin) { adminControls.classList.remove('hidden'); } else { adminControls.classList.add('hidden'); }
             
+            // Edit & Delete Buttons
             if (currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
                 editBtn.classList.remove('hidden'); editBtn.onclick = () => window.startEditIssue(item.id);
                 deleteBtn.classList.remove('hidden'); deleteBtn.innerHTML = 'Delete'; deleteBtn.classList.replace('bg-red-600', 'bg-red-100'); deleteBtn.classList.replace('text-white', 'text-red-700'); deleteBtn.onclick = () => window.requestDeleteIssue(item.id);
             } else { editBtn.classList.add('hidden'); deleteBtn.classList.add('hidden'); }
             
+            // Reopen Button Logic
             if (item.status === 'Resolved' && currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
                 reopenBtn.classList.remove('hidden');
                 reopenBtn.onclick = () => window.reopenTicket(item.id);
@@ -1140,11 +1064,6 @@
                     }
                     document.getElementById('login-overlay').classList.add('hidden');
                     window.showToast(`Welcome, ${user.displayName}!`, 'success');
-
-                    // NEW: Show Help Modal automatically on absolute first visit
-                    if (!localStorage.getItem('has_seen_help_guide')) {
-                        window.openHelpModal();
-                    }
 
                     const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
                     if (isAdmin) {
