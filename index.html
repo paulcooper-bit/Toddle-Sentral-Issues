@@ -121,7 +121,9 @@
         </div>
 
         <div class="flex flex-col lg:flex-row gap-6 items-start">
+            
             <section id="view-browse" class="w-full lg:flex-1 space-y-4">
+                
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-3">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-lightbulb text-amber-500 text-base flex-shrink-0"></i>
@@ -140,16 +142,15 @@
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
-                            <!-- New Category Filter -->
-                            <select id="filter-category" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium max-w-[150px] truncate">
+                            <select id="filter-category" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium">
                                 <option value="ALL">All Categories</option>
-                                <option value="Support for setup, data updates and fixes, or general queries">Support</option>
-                                <option value="Something’s broken or not behaving as expected">Bug</option>
-                                <option value="A new idea or improvement suggestion">Feature</option>
-                                <option value="Would like a quick training or support session">Training</option>
+                                <option value="Support">Support/Queries</option>
+                                <option value="Bug">Broken/Bug</option>
+                                <option value="Feature">New Idea</option>
+                                <option value="Training">Training</option>
                             </select>
 
-                            <select id="filter-subject" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-medium">
+                            <select id="filter-subject" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50">
                                 <option value="ALL">All Subjects</option>
                                 <option value="General">General</option>
                                 <option value="Core">Core</option>
@@ -182,7 +183,7 @@
                             </button>
 
                             <div class="border border-slate-200 rounded-lg p-1 bg-slate-100 flex items-center space-x-1">
-                                <!-- Re-ordered class defaults: List view active, Grid view inactive -->
+                                <!-- Table View Active Default -->
                                 <button onclick="setGridMode(true)" id="btn-grid" class="p-1.5 rounded text-xs text-slate-500 hover:text-slate-800"><i class="fa-solid fa-grip"></i></button>
                                 <button onclick="setGridMode(false)" id="btn-table" class="p-1.5 rounded text-xs text-indigo-600 bg-white shadow-xs font-semibold"><i class="fa-solid fa-list"></i></button>
                             </div>
@@ -195,7 +196,7 @@
                 </div>
 
                 <div id="issues-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    <!-- Dynamically populated issues -->
+                    <!-- Dynamically populated issues cards -->
                 </div>
                 <div id="no-issues-msg" class="hidden bg-white p-12 rounded-xl text-center border border-slate-200 text-slate-500">
                     <i class="fa-solid fa-clipboard-check text-4xl mb-3 text-slate-300"></i>
@@ -223,13 +224,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Issue Category *</label>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Category *</label>
                         <select id="form-category" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-                            <option value="" disabled selected hidden>Select Category...</option>
-                            <option value="Support for setup, data updates and fixes, or general queries">Support for setup, data updates and fixes, or general queries</option>
-                            <option value="Something’s broken or not behaving as expected">Something’s broken or not behaving as expected</option>
-                            <option value="A new idea or improvement suggestion">A new idea or improvement suggestion</option>
-                            <option value="Would like a quick training or support session">Would like a quick training or support session</option>
+                            <option value="" disabled selected hidden>Select an option...</option>
+                            <option value="Support">Support for setup, data updates and fixes, or general queries</option>
+                            <option value="Bug">Something’s broken or not behaving as expected</option>
+                            <option value="Feature">A new idea or improvement suggestion</option>
+                            <option value="Training">Would like a quick training or support session</option>
                         </select>
                     </div>
                     
@@ -283,6 +284,7 @@
                             <span class="text-[10px] text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">Optional</span>
                         </div>
                         
+                        <!-- Media Upload Buttons -->
                         <div id="media-upload-buttons" class="grid grid-cols-2 gap-2">
                             <button type="button" onclick="startStudioRecord()" id="btn-start-rec" class="bg-white border border-slate-300 text-slate-700 text-xs font-semibold py-2 rounded flex flex-col items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition">
                                 <i class="fa-solid fa-video text-indigo-500 mb-1 text-lg"></i>
@@ -323,12 +325,13 @@
 
     </main>
 
+    <!-- Issue Details Modal -->
     <div id="issue-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <span id="modal-category-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-indigo-500 text-white">Category</span>
-                    <span id="modal-subject-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-700 text-slate-200">Department</span>
+                    <span id="modal-category-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-amber-500 text-white">Category</span>
+                    <span id="modal-subject-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-indigo-500 text-white">Subject</span>
                     <span id="modal-system-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-slate-700 text-slate-200">System</span>
                     <span id="modal-id" class="text-xs text-slate-400 font-mono hidden sm:inline">#ID</span>
                 </div>
@@ -361,11 +364,22 @@
                         <h3 class="text-xs font-bold uppercase text-slate-600 tracking-wider flex items-center">
                             <i class="fa-regular fa-comments text-slate-400 mr-1.5"></i> Activity & Comments
                         </h3>
-                        <select id="modal-status-select" onchange="updateIssueStatus()" class="border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
-                            <option value="Open">🔴 Open</option>
-                            <option value="In Progress">🟡 In Progress</option>
-                            <option value="Resolved">🟢 Resolved</option>
-                        </select>
+                        <!-- Admin Assignment & Status Dropdowns -->
+                        <div id="modal-admin-controls" class="hidden flex space-x-2">
+                            <select id="modal-assignee-select" onchange="updateIssueAssignee()" class="border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+                                <option value="">👤 Unassigned</option>
+                                <option value="paul.cooper@online.island.edu.hk">Paul</option>
+                                <option value="jonathan.ho@online.island.edu.hk">Jonathan</option>
+                                <option value="marco.chan@online.island.edu.hk">Marco</option>
+                                <option value="radhika@toddleapp.com">Radhika</option>
+                            </select>
+                            
+                            <select id="modal-status-select" onchange="updateIssueStatus()" class="border border-slate-300 rounded-lg py-1 px-2 text-xs font-bold bg-white focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm">
+                                <option value="Open">🔴 Open</option>
+                                <option value="In Progress">🟡 In Progress</option>
+                                <option value="Resolved">🟢 Resolved</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="modal-chat-thread" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-white">
                         <!-- Chat messages go here -->
@@ -392,15 +406,21 @@
         </div>
     </div>
 
+    <!-- Firebase Configuration & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // Security Configuration
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com"]; 
-        const ADMIN_EMAILS = ["paul.cooper@online.island.edu.hk"]; // Owner & Admin can delete/edit!
+        const ADMIN_EMAILS = [
+            "paul.cooper@online.island.edu.hk", 
+            "jonathan.ho@online.island.edu.hk", 
+            "marco.chan@online.island.edu.hk", 
+            "radhika@toddleapp.com"
+        ]; // Owners & Admins can delete/edit/assign!
 
         const firebaseConfig = {
             apiKey: "AIzaSyBHr4oR89Q4hEMa-mF111e_WQez17y0lrs",
@@ -425,9 +445,10 @@
         window.doc = doc;
         window.deleteDoc = deleteDoc;
 
-        // UI View State
         window.editingIssueId = null; 
-        let isGridMode = false; // Default to Table view now
+        
+        // Sorting and Display Tracking
+        let isGridMode = false; // Set Table View as default!
         let sortColumn = 'date';
         let sortAsc = false;
         
@@ -519,7 +540,7 @@
                 sortAsc = !sortAsc;
             } else {
                 sortColumn = column;
-                sortAsc = true; 
+                sortAsc = true;
             }
             window.renderIssues();
         };
@@ -586,28 +607,18 @@
             window.renderIssues();
         };
 
-        // Utility to map long categories to short badges
-        function getCategoryBadge(category) {
-            if (!category) return "Other";
-            if (category.includes("Support for setup")) return "Support";
-            if (category.includes("Something’s broken")) return "Bug";
-            if (category.includes("A new idea")) return "Feature";
-            if (category.includes("quick training")) return "Training";
-            return category;
-        }
-
         window.renderIssues = function() {
             const search = document.getElementById('search-input')?.value.toLowerCase() || '';
-            const categoryFilter = document.getElementById('filter-category')?.value || 'ALL';
+            const category = document.getElementById('filter-category')?.value || 'ALL';
             const subject = document.getElementById('filter-subject')?.value || 'ALL';
             const system = document.getElementById('filter-system')?.value || 'ALL';
             const status = document.getElementById('filter-status')?.value || 'ALL';
 
-            const filtered = window.issues.filter(item => {
+            let filtered = window.issues.filter(item => {
                 const matchSearch = (item.title || '').toLowerCase().includes(search) || 
                                     (item.description || '').toLowerCase().includes(search) || 
                                     (item.reporter || '').toLowerCase().includes(search);
-                const matchCat = (categoryFilter === 'ALL') || (item.category === categoryFilter);
+                const matchCat = (category === 'ALL') || (item.category === category) || (!item.category && category === 'Support');
                 const matchSubj = (subject === 'ALL') || (item.subject === subject);
                 const matchSys = (system === 'ALL') || (item.system === system);
                 const matchStatus = (status === 'ALL') || (item.status === status);
@@ -615,7 +626,7 @@
                 let matchMyIssues = true;
                 if (showMyIssuesOnly && window.auth.currentUser) {
                     const uid = window.auth.currentUser.uid;
-                    matchMyIssues = (item.authorUid === uid) || (item.upvotedBy && item.upvotedBy.includes(uid));
+                    matchMyIssues = (item.authorUid === uid) || (item.upvotedBy && item.upvotedBy.includes(uid)) || (item.assignedTo === window.auth.currentUser.email);
                 }
 
                 return matchSearch && matchCat && matchSubj && matchSys && matchStatus && matchMyIssues;
@@ -625,15 +636,10 @@
             filtered.sort((a, b) => {
                 let valA = a[sortColumn];
                 let valB = b[sortColumn];
-
-                // Data sanitization for proper sorting types
-                if (sortColumn === 'category') {
-                    valA = getCategoryBadge(a.category);
-                    valB = getCategoryBadge(b.category);
-                }
-                if (valA === undefined) valA = '';
-                if (valB === undefined) valB = '';
-
+                
+                if (valA === undefined) valA = "";
+                if (valB === undefined) valB = "";
+                
                 if (sortColumn === 'date') {
                     valA = new Date(valA).getTime();
                     valB = new Date(valB).getTime();
@@ -644,7 +650,7 @@
                     valA = String(valA).toLowerCase();
                     valB = String(valB).toLowerCase();
                 }
-
+                
                 if (valA < valB) return sortAsc ? -1 : 1;
                 if (valA > valB) return sortAsc ? 1 : -1;
                 return 0;
@@ -662,12 +668,6 @@
                 if (noIssues) noIssues.classList.add('hidden');
             }
 
-            // Helper to draw the sorting arrows on headers
-            const getSortIcon = (col) => {
-                if (sortColumn !== col) return '<i class="fa-solid fa-sort ml-1 text-slate-300"></i>';
-                return sortAsc ? '<i class="fa-solid fa-sort-up ml-1 text-indigo-500"></i>' : '<i class="fa-solid fa-sort-down ml-1 text-indigo-500"></i>';
-            };
-
             if (isGridMode) {
                 container.className = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4";
                 filtered.forEach(item => {
@@ -678,21 +678,20 @@
                         <div class="p-4 space-y-3">
                             <div class="flex items-center justify-between text-xs">
                                 <div class="flex items-center space-x-1.5">
-                                    <span class="px-2 py-0.5 rounded font-bold text-slate-600 border border-slate-200">${getCategoryBadge(item.category)}</span>
-                                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-50 text-indigo-700">${item.subject}</span>
+                                    <span class="px-2 py-0.5 rounded font-bold bg-amber-50 text-amber-700 border border-amber-100">${item.category || 'Support'}</span>
+                                    <span class="px-2 py-0.5 rounded font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">${item.subject}</span>
+                                    <span class="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-600">${item.system}</span>
                                 </div>
                                 ${getStatusBadgeHTML(item.status)}
                             </div>
                             <h3 class="font-bold text-slate-800 text-sm group-hover:text-indigo-600 transition line-clamp-2">${item.title}</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-600 text-[10px]">${item.system}</span>
-                                <span class="text-[10px] text-slate-400">${new Date(item.date).toLocaleDateString()}</span>
-                            </div>
+                            <p class="text-xs text-slate-500 line-clamp-2">${item.description}</p>
                         </div>
                         <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
                             <span class="flex items-center"><i class="fa-solid fa-user mr-1 text-slate-400"></i> ${(item.reporter || '').split(' ')[0]}</span>
                             <div class="flex items-center space-x-3">
-                                ${item.mediaUrl ? '<span class="text-indigo-600 font-bold"><i class="fa-solid fa-paperclip"></i> Media</span>' : ''}
+                                ${item.assignedTo ? `<span class="text-indigo-600 font-bold" title="Assigned to ${item.assignedTo}"><i class="fa-solid fa-clipboard-user"></i> ${item.assignedTo.split('@')[0]}</span>` : ''}
+                                ${item.mediaUrl ? '<span class="text-slate-400 font-bold"><i class="fa-solid fa-paperclip"></i></span>' : ''}
                                 <span class="bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full"><i class="fa-solid fa-thumbs-up mr-1"></i>${item.upvotes || 0}</span>
                             </div>
                         </div>
@@ -701,30 +700,37 @@
                 });
             } else {
                 container.className = "bg-white rounded-xl shadow-xs border border-slate-200 overflow-x-auto col-span-full";
+                
+                const getSortIcon = (col) => {
+                    if (sortColumn !== col) return '';
+                    return sortAsc ? '<i class="fa-solid fa-caret-up ml-1 text-indigo-500"></i>' : '<i class="fa-solid fa-caret-down ml-1 text-indigo-500"></i>';
+                };
+
                 let tableHTML = `
                     <table class="w-full text-left text-xs text-slate-700">
-                        <thead class="bg-slate-50 uppercase text-[10px] font-bold text-slate-500 border-b border-slate-200 cursor-pointer select-none">
+                        <thead class="bg-slate-100 uppercase text-[10px] font-bold text-slate-500 border-b border-slate-200">
                             <tr>
-                                <th class="p-3 hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('category')">Category ${getSortIcon('category')}</th>
-                                <th class="p-3 hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('subject')">Department ${getSortIcon('subject')}</th>
-                                <th class="p-3 hover:bg-slate-100 transition" onclick="setSort('title')">Title ${getSortIcon('title')}</th>
-                                <th class="p-3 hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('system')">System ${getSortIcon('system')}</th>
-                                <th class="p-3 hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('reporter')">Reporter ${getSortIcon('reporter')}</th>
-                                <th class="p-3 hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('status')">Status ${getSortIcon('status')}</th>
-                                <th class="p-3 text-right hover:bg-slate-100 transition whitespace-nowrap" onclick="setSort('upvotes')">Upvotes ${getSortIcon('upvotes')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('category')">Category ${getSortIcon('category')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('subject')">Department ${getSortIcon('subject')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('title')">Title ${getSortIcon('title')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('system')">System ${getSortIcon('system')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('reporter')">Reporter ${getSortIcon('reporter')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('assignedTo')">Assigned To ${getSortIcon('assignedTo')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition" onclick="window.setSort('status')">Status ${getSortIcon('status')}</th>
+                                <th class="p-3 cursor-pointer hover:bg-slate-200 transition text-right" onclick="window.setSort('upvotes')">Upvotes ${getSortIcon('upvotes')}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                 `;
                 filtered.forEach(item => {
-                    const badgeText = getCategoryBadge(item.category);
                     tableHTML += `
                         <tr onclick="window.openIssueModal('${item.id}')" class="hover:bg-indigo-50/50 cursor-pointer transition">
-                            <td class="p-3 font-semibold text-indigo-700">${badgeText}</td>
+                            <td class="p-3 font-bold text-amber-700">${item.category || 'Support'}</td>
                             <td class="p-3 font-semibold"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded">${item.subject}</span></td>
-                            <td class="p-3 font-medium text-slate-800 max-w-xs truncate">${item.title} ${item.mediaUrl ? '<i class="fa-solid fa-paperclip text-slate-400 ml-1"></i>' : ''}</td>
-                            <td class="p-3 text-slate-600">${item.system}</td>
+                            <td class="p-3 font-medium text-slate-800 max-w-xs truncate">${item.title}</td>
+                            <td class="p-3">${item.system}</td>
                             <td class="p-3 text-slate-500">${item.reporter}</td>
+                            <td class="p-3 text-indigo-600 font-medium">${item.assignedTo ? item.assignedTo.split('@')[0] : '—'}</td>
                             <td class="p-3">${getStatusBadgeHTML(item.status)}</td>
                             <td class="p-3 text-right font-bold text-indigo-600">${item.upvotes || 0}</td>
                         </tr>
@@ -736,9 +742,9 @@
         };
 
         function getStatusBadgeHTML(status) {
-            if (status === 'Open') return `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap"><i class="fa-solid fa-circle text-[7px] mr-1"></i> Open</span>`;
-            if (status === 'In Progress') return `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap"><i class="fa-solid fa-spinner text-[8px] mr-1 animate-spin-slow"></i> In Progress</span>`;
-            return `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap"><i class="fa-solid fa-check text-[8px] mr-1"></i> Resolved</span>`;
+            if (status === 'Open') return `<span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-circle text-[7px] mr-1"></i> Open</span>`;
+            if (status === 'In Progress') return `<span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-spinner text-[8px] mr-1 animate-spin-slow"></i> In Progress</span>`;
+            return `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-check text-[8px] mr-1"></i> Resolved</span>`;
         }
 
         window.updateStats = function() {
@@ -839,7 +845,7 @@
                 let voiceStream = null;
                 
                 try {
-                    // Ask for Mic First
+                    // 1. ASK FOR MICROPHONE FIRST
                     try {
                         voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                         voiceStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
@@ -848,7 +854,7 @@
                         window.showToast("Recording without microphone audio.", "warning");
                     }
 
-                    // Ask for Screen Second
+                    // 2. ASK FOR SCREEN SECOND
                     const displayStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
                     displayStream.getTracks().forEach(track => combinedStream.addTrack(track));
 
@@ -919,7 +925,7 @@
 
             selectedModalIssueId = id;
             document.getElementById('modal-id').innerText = item.id.substring(0, 8) + '...';
-            document.getElementById('modal-category-badge').innerText = getCategoryBadge(item.category);
+            document.getElementById('modal-category-badge').innerText = item.category || 'Support';
             document.getElementById('modal-subject-badge').innerText = item.subject;
             document.getElementById('modal-system-badge').innerText = item.system;
             document.getElementById('modal-title').innerText = item.title;
@@ -928,7 +934,7 @@
             document.getElementById('modal-date').innerText = new Date(item.date).toLocaleDateString();
             document.getElementById('modal-description').innerText = item.description;
             document.getElementById('modal-status-select').value = item.status;
-            document.getElementById('modal-upvote-count').innerText = item.upvotes || 0;
+            document.getElementById('modal-assignee-select').value = item.assignedTo || '';
 
             const mediaSection = document.getElementById('modal-media-section');
             const mediaContainer = document.getElementById('modal-media-container');
@@ -973,10 +979,17 @@
                 setTimeout(() => { chatThread.scrollTop = chatThread.scrollHeight; }, 10);
             }
 
+            const adminControls = document.getElementById('modal-admin-controls');
             const editBtn = document.getElementById('modal-edit-btn');
             const deleteBtn = document.getElementById('modal-delete-btn');
             const currentUser = window.auth.currentUser;
             const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
+
+            if (isAdmin) {
+                adminControls.classList.remove('hidden');
+            } else {
+                adminControls.classList.add('hidden');
+            }
 
             if (currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
                 editBtn.classList.remove('hidden');
@@ -1007,8 +1020,7 @@
             window.editingIssueId = id; 
             
             document.getElementById('form-title').value = item.title;
-            // Pre-select category if available
-            if(item.category) document.getElementById('form-category').value = item.category;
+            document.getElementById('form-category').value = item.category || 'Support';
             document.getElementById('form-system').value = item.system;
             document.getElementById('form-subject').value = item.subject;
             document.getElementById('form-description').value = item.description;
@@ -1051,6 +1063,45 @@
                     window.showToast("Error deleting issue.", "error");
                     btn.innerText = 'Delete';
                 }
+            }
+        };
+
+        // NEW: ASSIGNEE & WEBHOOK LOGIC
+        window.updateIssueAssignee = async function() {
+            if (!selectedModalIssueId || !window.auth.currentUser) return;
+            const newAssignee = document.getElementById('modal-assignee-select').value;
+            const docRef = window.doc(window.db, 'issues', selectedModalIssueId);
+            const item = window.issues.find(i => i.id === selectedModalIssueId);
+            
+            const systemMsg = {
+                author: window.auth.currentUser.displayName || "Admin",
+                text: `assigned this ticket to ${newAssignee ? newAssignee.split('@')[0] : 'Unassigned'}`,
+                date: new Date().toISOString(),
+                system: true
+            };
+            const updatedComments = [...(item.comments || []), systemMsg];
+            
+            try {
+                await window.updateDoc(docRef, { assignedTo: newAssignee, comments: updatedComments });
+                window.showToast(`Issue assigned to ${newAssignee || 'Unassigned'}.`, 'success');
+                
+                // WEBHOOK @ MENTION TRIGGER
+                const WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQAtk3Xk_s/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=dJIkE3vht4ZiSHr3wzZw3RHzbk6vUvxqUIWybER3McE";
+                
+                if (newAssignee && WEBHOOK_URL && WEBHOOK_URL.includes("chat.googleapis.com")) {
+                    const chatPayload = {
+                        text: `<users/${newAssignee}> 🚨 *You have been assigned a ticket!*\n\n*Title:* ${item.title}\n*Reporter:* ${item.reporter}\n*System:* ${item.system}\n\nPlease check the IT Portal to respond.`
+                    };
+                    fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(chatPayload)
+                    });
+                }
+                
+            } catch(e) {
+                console.error(e);
+                window.showToast("Failed to assign issue.", "error");
             }
         };
 
@@ -1139,17 +1190,18 @@
                 return;
             }
             
-            let csvContent = "data:text/csv;charset=utf-8,ID,Title,Category,System,Subject,Reporter,Date,Status,Upvotes\n";
+            let csvContent = "data:text/csv;charset=utf-8,ID,Category,Title,System,Subject,Reporter,Date,Status,Assignee,Upvotes\n";
             window.issues.forEach(i => {
                 const row = [
                     i.id || "N/A",
+                    `"${i.category || 'Support'}"`,
                     `"${(i.title || '').replace(/"/g, '""')}"`,
-                    `"${getCategoryBadge(i.category)}"`,
                     `"${i.system || ''}"`,
                     `"${i.subject || ''}"`,
                     `"${(i.reporter || '').replace(/"/g, '""')}"`,
                     i.date || '',
                     i.status || '',
+                    `"${i.assignedTo || 'Unassigned'}"`,
                     i.upvotes || 0
                 ].join(",");
                 csvContent += row + "\n";
@@ -1323,6 +1375,19 @@
                         const issuesRef = collection(db, 'issues');
                         await addDoc(issuesRef, newIssue);
                         window.showToast("Issue reported successfully!", 'success');
+                        
+                        // NEW TICKET WEBHOOK TRIGGER
+                        const WEBHOOK_URL = "https://chat.googleapis.com/v1/spaces/AAQAtk3Xk_s/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=dJIkE3vht4ZiSHr3wzZw3RHzbk6vUvxqUIWybER3McE";
+                        if (WEBHOOK_URL && WEBHOOK_URL.includes("chat.googleapis.com")) {
+                            const chatPayload = {
+                                text: `🚨 *New IT Ticket Submitted*\n\n*Title:* ${title}\n*System:* ${system}\n*Category:* ${category}\n*Reporter:* ${reporter}\n\n*Description:* ${description}`
+                            };
+                            fetch(WEBHOOK_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                                body: JSON.stringify(chatPayload)
+                            }).catch(err => console.error(err));
+                        }
                     }
                     
                     window.editingIssueId = null;
