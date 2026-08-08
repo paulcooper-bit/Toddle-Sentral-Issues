@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Toddle & Sentral Issue Tracker Portal</title>
-    <!-- NEW: Browser Tab Icon -->
+    
+    <!-- Browser Tab Icon -->
     <link rel="icon" type="image/png" href="favicon.png">
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -32,7 +34,7 @@
             </div>
             <div>
                 <h2 class="text-2xl font-bold text-slate-800">Staff Portal Login</h2>
-                <p class="text-sm text-slate-500 mt-2">Please sign in with your school Google account to access the IT Issue Tracker.</p>
+                <p class="text-sm text-slate-500 mt-2">Please sign in with your school Google account to access the IS Toddle / Sentral Issues Portal.</p>
             </div>
             
             <div id="login-error-msg" class="hidden bg-red-50 text-red-700 p-3 rounded-lg text-sm border border-red-200">
@@ -48,10 +50,16 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- NEW: Notification Nudge Banner -->
+    <!-- Notification Nudge Banner -->
     <div id="notification-nudge" class="hidden bg-indigo-50 border-b border-indigo-100 px-4 py-2 text-center text-xs text-indigo-700 flex justify-center items-center gap-3 shadow-sm z-40">
         <span>🔔 <strong>Pro Tip:</strong> Click the bell icon on the right to enable desktop alerts so you don't miss our replies!</span>
         <button onclick="document.getElementById('notification-nudge').style.display='none'" class="text-indigo-400 hover:text-indigo-700 transition"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- GLOBAL OUTAGE BANNER (Hidden by default, controlled by Admins) -->
+    <div id="global-announcement" class="hidden bg-red-600 text-white px-4 py-3 text-center text-sm font-bold shadow-md z-40 flex justify-center items-center gap-3">
+        <i class="fa-solid fa-triangle-exclamation text-xl animate-pulse"></i>
+        <span id="global-announcement-text">System Outage Announcement</span>
     </div>
 
     <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-30">
@@ -69,6 +77,12 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
+                    
+                    <!-- Admin Settings Button (Hidden for standard users) -->
+                    <button id="btn-admin-settings" onclick="setGlobalAnnouncement()" class="hidden text-indigo-200 hover:text-white transition relative p-2 focus:outline-none" title="Admin Settings">
+                        <i class="fa-solid fa-gear text-xl"></i>
+                    </button>
+
                     <!-- In-App Notification Bell -->
                     <div class="relative flex items-center">
                         <button onclick="toggleNotifications()" class="text-indigo-200 hover:text-white transition relative p-2 focus:outline-none">
@@ -179,8 +193,9 @@
                                 <option value="Both">Both</option>
                             </select>
 
-                            <select id="filter-status" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50">
-                                <option value="ALL">All Statuses</option>
+                            <select id="filter-status" onchange="renderIssues()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50 font-semibold text-indigo-700">
+                                <option value="ACTIVE" selected>Active Only</option>
+                                <option value="ALL">All Statuses (Inc. Resolved)</option>
                                 <option value="Open">Open</option>
                                 <option value="In Progress">In Progress</option>
                                 <option value="Resolved">Resolved</option>
@@ -410,6 +425,7 @@
                     <i class="fa-solid fa-thumbs-up mr-1.5"></i> +1 I Have This Issue Too (<span id="modal-upvote-count">0</span>)
                 </button>
                 <div class="flex space-x-2">
+                    <button id="modal-reopen-btn" class="hidden px-4 py-1.5 bg-amber-100 text-amber-700 rounded-lg font-bold hover:bg-amber-200 transition transition-colors duration-300 shadow-sm"><i class="fa-solid fa-rotate-left mr-1"></i> Reopen</button>
                     <button id="modal-edit-btn" class="hidden px-4 py-1.5 bg-blue-100 text-blue-700 rounded-lg font-bold hover:bg-blue-200 transition transition-colors duration-300">Edit</button>
                     <button id="modal-delete-btn" class="hidden px-4 py-1.5 bg-red-100 text-red-700 rounded-lg font-bold hover:bg-red-200 transition transition-colors duration-300">Delete</button>
                     <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-300 transition">Close</button>
@@ -422,7 +438,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, addDoc, updateDoc, doc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // IMPORTANT CONFIGURATION
@@ -460,6 +476,7 @@
         window.updateDoc = updateDoc;
         window.doc = doc;
         window.deleteDoc = deleteDoc;
+        window.setDoc = setDoc;
 
         window.editingIssueId = null; 
         
@@ -480,17 +497,13 @@
         let studioTimerInterval = null;
         let studioSeconds = 0;
 
-        // NEW: Centralized Email Trigger Function
+        // Centralized Email Trigger Function
         async function sendEmailNotification(toEmail, subject, htmlMessage) {
             if (!toEmail) return;
             try {
-                // This writes to the specific collection that the Firebase Trigger Email Extension watches
                 await addDoc(collection(db, 'mail'), {
                     to: toEmail,
-                    message: {
-                        subject: subject,
-                        html: htmlMessage
-                    }
+                    message: { subject: subject, html: htmlMessage }
                 });
                 console.log(`Email queued for ${toEmail}`);
             } catch (error) {
@@ -513,6 +526,23 @@
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4000);
+        };
+
+        // NEW: Global Outage Announcement Function
+        window.setGlobalAnnouncement = async function() {
+            const currentText = document.getElementById('global-announcement-text').innerText;
+            const isHidden = document.getElementById('global-announcement').classList.contains('hidden');
+            
+            const msg = prompt("Enter an emergency outage announcement (Leave blank to clear and hide banner):", isHidden ? "" : currentText);
+            if (msg !== null) {
+                try {
+                    await window.setDoc(window.doc(db, 'settings', 'general'), { announcement: msg.trim() }, { merge: true });
+                    window.showToast("Global announcement updated.", "success");
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("Failed to update announcement. Check permissions.", "error");
+                }
+            }
         };
 
         window.toggleMobileForm = function() {
@@ -563,13 +593,12 @@
                     if (permission === "granted") {
                         window.showToast("Push notifications enabled!", "success");
                         document.getElementById('notification-nudge').style.display='none';
-                        new Notification("IT Portal", { body: "You will now receive alerts here when your issues are updated." });
+                        new Notification("IS Toddle / Sentral Issues Portal", { body: "You will now receive alerts here when your issues are updated." });
                     }
                 });
             }
         };
 
-        // NEW: Clickable In-App Notifications
         window.addNotification = function(message, issueId = null) {
             myNotifications.unshift({ msg: message, time: new Date(), id: issueId });
             unreadNotifications++;
@@ -589,7 +618,7 @@
             });
             
             if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("IT Portal Update", { body: message });
+                new Notification("IS Toddle / Sentral Issues Portal Update", { body: message });
             }
         };
 
@@ -606,14 +635,18 @@
             const category = document.getElementById('filter-category')?.value || 'ALL';
             const subject = document.getElementById('filter-subject')?.value || 'ALL';
             const system = document.getElementById('filter-system')?.value || 'ALL';
-            const status = document.getElementById('filter-status')?.value || 'ALL';
+            const status = document.getElementById('filter-status')?.value || 'ACTIVE'; // Changed default to Active
 
             let filtered = window.issues.filter(item => {
                 const matchSearch = (item.title || '').toLowerCase().includes(search) || (item.description || '').toLowerCase().includes(search) || (item.reporter || '').toLowerCase().includes(search);
                 const matchCat = (category === 'ALL') || (item.category === category) || (!item.category && category === 'Support');
                 const matchSubj = (subject === 'ALL') || (item.subject === subject);
                 const matchSys = (system === 'ALL') || (item.system === system);
-                const matchStatus = (status === 'ALL') || (item.status === status);
+                
+                // Active vs All filtering logic
+                const matchStatus = (status === 'ALL') || 
+                                    (status === 'ACTIVE' && item.status !== 'Resolved') || 
+                                    (item.status === status);
                 
                 let matchMyIssues = true;
                 if (showMyIssuesOnly && window.auth.currentUser) {
@@ -815,19 +848,54 @@
             const adminControls = document.getElementById('modal-admin-controls');
             const editBtn = document.getElementById('modal-edit-btn');
             const deleteBtn = document.getElementById('modal-delete-btn');
+            const reopenBtn = document.getElementById('modal-reopen-btn');
+            
             const currentUser = window.auth.currentUser;
             const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
 
             if (isAdmin) { adminControls.classList.remove('hidden'); } else { adminControls.classList.add('hidden'); }
+            
+            // Edit & Delete Buttons
             if (currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
                 editBtn.classList.remove('hidden'); editBtn.onclick = () => window.startEditIssue(item.id);
                 deleteBtn.classList.remove('hidden'); deleteBtn.innerHTML = 'Delete'; deleteBtn.classList.replace('bg-red-600', 'bg-red-100'); deleteBtn.classList.replace('text-white', 'text-red-700'); deleteBtn.onclick = () => window.requestDeleteIssue(item.id);
             } else { editBtn.classList.add('hidden'); deleteBtn.classList.add('hidden'); }
+            
+            // Reopen Button Logic
+            if (item.status === 'Resolved' && currentUser && (item.authorUid === currentUser.uid || isAdmin)) {
+                reopenBtn.classList.remove('hidden');
+                reopenBtn.onclick = () => window.reopenTicket(item.id);
+            } else {
+                reopenBtn.classList.add('hidden');
+            }
 
             document.getElementById('issue-modal').classList.remove('hidden');
         };
 
         window.closeModal = function() { document.getElementById('issue-modal').classList.add('hidden'); selectedModalIssueId = null; };
+
+        window.reopenTicket = async function(id) {
+            if (!window.auth.currentUser) return;
+            const docRef = window.doc(window.db, 'issues', id);
+            const item = window.issues.find(i => i.id === id);
+            const systemMsg = { author: window.auth.currentUser.displayName || "User", text: `reopened the ticket.`, date: new Date().toISOString(), system: true };
+            const updatedComments = [...(item.comments || []), systemMsg];
+            
+            try {
+                await window.updateDoc(docRef, { status: "Open", comments: updatedComments });
+                window.showToast("Ticket reopened successfully.", "success");
+                
+                if (WEBHOOK_URL && WEBHOOK_URL.includes("chat.googleapis.com")) {
+                    const chatPayload = { text: `⚠️ *IS Toddle / Sentral Issues Portal Ticket Reopened*\n\n*Title:* ${item.title}\n*Reopened By:* ${window.auth.currentUser.displayName}\n\n<${PORTAL_URL}|Click here to open the IS Toddle / Sentral Issues Portal>` };
+                    fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: JSON.stringify(chatPayload) });
+                }
+                
+                window.openIssueModal(id);
+            } catch(e) {
+                console.error(e);
+                window.showToast("Failed to reopen ticket.", "error");
+            }
+        };
 
         window.startEditIssue = function(id) { /* Edit Logic */ };
         window.requestDeleteIssue = async function(id) { /* Delete Logic */ };
@@ -846,7 +914,7 @@
                 
                 if (newAssignee && WEBHOOK_URL.includes("chat.googleapis.com")) {
                     const chatPayload = {
-                        text: `<users/${newAssignee}> 🚨 *You have been assigned a ticket!*\n\n*Title:* ${item.title}\n*Reporter:* ${item.reporter}\n*System:* ${item.system}\n\n<${PORTAL_URL}|Click here to open portal>`
+                        text: `<users/${newAssignee}> 🚨 *You have been assigned an IS Toddle / Sentral Issues Portal Ticket!*\n\n*Title:* ${item.title}\n*Reporter:* ${item.reporter}\n*System:* ${item.system}\n\n<${PORTAL_URL}|Click here to open the IS Toddle / Sentral Issues Portal>`
                     };
                     fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: JSON.stringify(chatPayload) });
                 }
@@ -864,17 +932,35 @@
             try {
                 await window.updateDoc(docRef, { status: newStatus, comments: updatedComments });
                 window.showToast(`Status updated to ${newStatus}.`, 'success');
+                
+                if(newStatus === 'Resolved') {
+                    document.getElementById('modal-reopen-btn').classList.remove('hidden');
+                } else {
+                    document.getElementById('modal-reopen-btn').classList.add('hidden');
+                }
 
-                // NEW EMAIL TRIGGER: Notify the reporter that the status changed
                 if (item.email) {
                     const emailBody = `
-                        <h3>Your IT Ticket has been updated!</h3>
+                        <h3>Your IS Toddle / Sentral Issues Portal Ticket has been updated!</h3>
                         <p><strong>Ticket:</strong> ${item.title}</p>
                         <p><strong>New Status:</strong> ${newStatus}</p>
-                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IT Portal and view details.</p>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and view details.</p>
                     `;
-                    sendEmailNotification(item.email, `Ticket Update: ${item.title}`, emailBody);
+                    sendEmailNotification(item.email, `IS Toddle / Sentral Issues Portal Update: ${item.title}`, emailBody);
                 }
+
+                if (newStatus === 'Resolved' && item.upvotedEmails) {
+                    const bccList = item.upvotedEmails.filter(e => e !== item.email && e !== window.auth.currentUser.email);
+                    bccList.forEach(upvoterEmail => {
+                        const upvoterEmailBody = `
+                            <h3>A ticket you upvoted has been resolved!</h3>
+                            <p><strong>Ticket:</strong> ${item.title}</p>
+                            <p>This issue has been marked as resolved. Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and view details.</p>
+                        `;
+                        sendEmailNotification(upvoterEmail, `IS Toddle / Sentral Issues Portal Resolved: ${item.title}`, upvoterEmailBody);
+                    });
+                }
+
             } catch(e) { window.showToast("Failed to update status.", "error"); }
         };
 
@@ -893,29 +979,59 @@
                 inputEl.value = '';
                 await window.updateDoc(docRef, { comments: updatedComments });
 
-                // ALERT ASSIGNEE IN CHAT (If someone else replies)
                 if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email && WEBHOOK_URL.includes("chat.googleapis.com")) {
                     const chatPayload = { text: `<users/${item.assignedTo}> 💬 *New Comment on your ticket: ${item.title}*\n\n*${window.auth.currentUser.displayName}:* ${text}\n\n<${PORTAL_URL}|Click here to reply>` };
                     fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: JSON.stringify(chatPayload) });
                 }
 
-                // NEW EMAIL TRIGGER: Notify the original reporter if IT replies
                 if (item.email && item.authorUid !== window.auth.currentUser.uid) {
                     const emailBody = `
-                        <h3>New reply to your IT Ticket</h3>
+                        <h3>New reply to your IS Toddle / Sentral Issues Portal Ticket</h3>
                         <p><strong>Ticket:</strong> ${item.title}</p>
                         <p><strong>${window.auth.currentUser.displayName} said:</strong></p>
                         <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${text}</blockquote>
                         <br>
-                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IT Portal and respond.</p>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and respond.</p>
                     `;
-                    sendEmailNotification(item.email, `New Reply: ${item.title}`, emailBody);
+                    sendEmailNotification(item.email, `IS Toddle / Sentral Issues Portal New Reply: ${item.title}`, emailBody);
                 }
 
             } catch(e) { window.showToast("Failed to post comment.", "error"); }
         };
 
-        window.upvoteCurrentModalIssue = async function() { /* Upvote Logic */ };
+        window.upvoteCurrentModalIssue = async function() { 
+            if (!selectedModalIssueId || !window.auth.currentUser) return;
+            const item = window.issues.find(i => i.id === selectedModalIssueId);
+            const userId = window.auth.currentUser.uid;
+            const userEmail = window.auth.currentUser.email;
+            
+            if (item) {
+                try {
+                    const upvoters = item.upvotedBy || [];
+                    const upvotedEmails = item.upvotedEmails || (item.email ? [item.email] : []);
+
+                    if (upvoters.includes(userId)) {
+                        window.showToast("You have already upvoted this issue.", "info");
+                        return;
+                    }
+                    
+                    const newUpvotes = (item.upvotes || 0) + 1;
+                    const newUpvotedBy = [...upvoters, userId];
+                    if (userEmail && !upvotedEmails.includes(userEmail)) {
+                        upvotedEmails.push(userEmail);
+                    }
+                    
+                    const docRef = window.doc(window.db, 'issues', selectedModalIssueId);
+                    await window.updateDoc(docRef, { upvotes: newUpvotes, upvotedBy: newUpvotedBy, upvotedEmails: upvotedEmails });
+                    
+                    document.getElementById('modal-upvote-count').innerText = newUpvotes;
+                    window.showToast(`Upvoted! You'll now receive email notifications for this issue.`, 'info');
+                } catch(e) {
+                    window.showToast("Failed to upvote.", "error");
+                }
+            }
+        };
+
         window.exportToCSV = function() { /* CSV Logic */ };
         
         function showLoginError(message) { /* Error Logic */ }
@@ -923,6 +1039,20 @@
         window.signOutUser = async function() { /* Auth Logic */ };
 
         async function initApp() {
+            const settingsRef = window.doc(db, 'settings', 'general');
+            onSnapshot(settingsRef, (docSnap) => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    const banner = document.getElementById('global-announcement');
+                    if(data.announcement) {
+                        document.getElementById('global-announcement-text').innerText = data.announcement;
+                        banner.classList.remove('hidden');
+                    } else {
+                        banner.classList.add('hidden');
+                    }
+                }
+            });
+
             onAuthStateChanged(auth, async (user) => {
                 const errorBox = document.getElementById('login-error-msg');
                 if (errorBox) errorBox.classList.add('hidden');
@@ -934,12 +1064,17 @@
                     }
                     document.getElementById('login-overlay').classList.add('hidden');
                     window.showToast(`Welcome, ${user.displayName}!`, 'success');
+
+                    const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
+                    if (isAdmin) {
+                        const adminBtn = document.getElementById('btn-admin-settings');
+                        if(adminBtn) adminBtn.classList.remove('hidden');
+                    }
                     
                     const reporterInput = document.getElementById('form-reporter'); if(reporterInput && user.displayName) reporterInput.value = user.displayName;
                     const emailInput = document.getElementById('form-email'); if(emailInput && user.email) emailInput.value = user.email;
                     const dateInput = document.getElementById('form-date'); if (dateInput) dateInput.value = new Date().toLocaleDateString();
 
-                    // Check for notification permission to hide banner
                     if (("Notification" in window) && Notification.permission === "granted") {
                         document.getElementById('notification-nudge').style.display = 'none';
                     } else {
@@ -982,12 +1117,17 @@
                         await updateDoc(docRef, updatePayload);
                         window.showToast("Issue updated successfully!", 'success');
                     } else {
-                        const newIssue = { title, category, system, subject, reporter, email, description, date: new Date().toISOString(), status: "Open", notes: "", upvotes: 1, comments: [], mediaUrl: finalMediaUrl, mediaType: finalMediaType || null, authorUid: auth.currentUser.uid, upvotedBy: [auth.currentUser.uid] };
+                        const newIssue = { 
+                            title, category, system, subject, reporter, email, description, 
+                            date: new Date().toISOString(), status: "Open", notes: "", 
+                            upvotes: 1, comments: [], mediaUrl: finalMediaUrl, mediaType: finalMediaType || null, 
+                            authorUid: auth.currentUser.uid, upvotedBy: [auth.currentUser.uid], upvotedEmails: [auth.currentUser.email]
+                        };
                         await addDoc(collection(db, 'issues'), newIssue);
                         window.showToast("Issue reported successfully!", 'success');
                         
                         if (WEBHOOK_URL && WEBHOOK_URL.includes("chat.googleapis.com")) {
-                            const chatPayload = { text: `🚨 *New IT Ticket Submitted*\n\n*Title:* ${title}\n*System:* ${system}\n*Category:* ${category}\n*Reporter:* ${reporter}\n\n*Description:* ${description}\n\n<${PORTAL_URL}|Click here to view portal>` };
+                            const chatPayload = { text: `🚨 *New IS Toddle / Sentral Issues Portal Ticket Submitted*\n\n*Title:* ${title}\n*System:* ${system}\n*Category:* ${category}\n*Reporter:* ${reporter}\n\n*Description:* ${description}\n\n<${PORTAL_URL}|Click here to open the IS Toddle / Sentral Issues Portal>` };
                             fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=UTF-8' }, body: JSON.stringify(chatPayload) });
                         }
                     }
