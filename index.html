@@ -345,7 +345,6 @@
                 </form>
             </section>
         </div>
-
     </main>
 
     <div id="issue-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -428,7 +427,6 @@
         </div>
     </div>
 
-    <!-- Quick Help / Instructions Modal -->
     <div id="help-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div class="bg-indigo-900 text-white px-6 py-4 flex items-center justify-between">
@@ -487,9 +485,6 @@
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const PORTAL_URL = "https://paulcooper-bit.github.io/Toddle-Sentral-Issues/"; 
-        
-        // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE:
-        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzaj59bWxEfwic2iyMl_kKVZGCSbM8NDrDhU1_8i1_s5DuAiRkCznl-75PQJU3tH_Ib/exec"; 
 
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com", "@esfcentre.edu.hk"]; 
         const ADMIN_EMAILS = [
@@ -544,7 +539,6 @@
         let studioTimerInterval = null;
         let studioSeconds = 0;
 
-        // --- NEW MENTION AUTOSUGGESTION LOGIC ---
         window.insertMention = function(email) {
             const inputEl = document.getElementById('modal-chat-input');
             const val = inputEl.value;
@@ -623,7 +617,6 @@
                 }
             });
         }
-        // --- END MENTION AUTOSUGGESTION LOGIC ---
 
         function showLoginError(message) {
             const errorBox = document.getElementById('login-error-msg');
@@ -671,6 +664,7 @@
             }
         });
 
+        // Email Trigger Function
         async function sendEmailNotification(toEmail, subject, htmlMessage) {
             if (!toEmail) return;
             try {
@@ -678,23 +672,9 @@
                     to: toEmail,
                     message: { subject: subject, html: htmlMessage }
                 });
+                console.log(`Email queued for ${toEmail}`);
             } catch (error) {
                 console.error("Failed to queue email notification", error);
-            }
-        }
-
-        // Safe Relay to Google Apps Script or Chat Webhook
-        function safeSendWebhook(payload) {
-            if (WEBHOOK_URL && WEBHOOK_URL.trim() !== "") {
-                fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-                    body: JSON.stringify(payload)
-                }).then(res => {
-                    console.log("Chat Webhook Relay triggered successfully.");
-                }).catch(err => {
-                    console.warn("Webhook Relay error:", err);
-                });
             }
         }
 
@@ -1211,10 +1191,6 @@
                 await window.updateDoc(docRef, { status: "Open", comments: updatedComments });
                 window.showToast("Ticket reopened successfully.", "success");
                 
-                safeSendWebhook({ 
-                    text: `⚠️ *IS Toddle / Sentral Issues Portal Ticket Reopened*\n\n*Title:* ${item.title}\n*Reopened By:* ${window.auth.currentUser.displayName}\n\n<${PORTAL_URL}|Click here to open portal>` 
-                });
-                
                 window.openIssueModal(id);
             } catch(e) {
                 console.error(e);
@@ -1306,10 +1282,10 @@
                     }
                     selectEl.value = newAssignee;
                 } else {
-                    // Revert to the previous value (getting the current assigned to from the issue)
+                    // Revert to the previous value
                     const item = window.issues.find(i => i.id === selectedModalIssueId);
                     selectEl.value = item.assignedTo || '';
-                    return; // Exit if prompt was cancelled or empty
+                    return; 
                 }
             }
 
@@ -1322,10 +1298,17 @@
                 await window.updateDoc(docRef, { assignedTo: newAssignee, comments: updatedComments });
                 window.showToast(`Issue assigned to ${newAssignee || 'Unassigned'}.`, 'success');
                 
+                // Exclusively trigger Email Notification to new assignee
                 if (newAssignee) {
-                    safeSendWebhook({
-                        text: `<users/${newAssignee}> 🚨 *You have been assigned an IS Toddle / Sentral Issues Portal Ticket!*\n\n*Title:* ${item.title}\n*Reporter:* ${item.reporter}\n*System:* ${item.system}\n\n<${PORTAL_URL}|Click here to open portal>`
-                    });
+                    const assignEmailBody = `
+                        <h3>You have been assigned a ticket!</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>Reporter:</strong> ${item.reporter}</p>
+                        <p><strong>System:</strong> ${item.system}</p>
+                        <br>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view details.</p>
+                    `;
+                    sendEmailNotification(newAssignee, `Ticket Assigned: ${item.title}`, assignEmailBody);
                 }
             } catch(e) { window.showToast("Failed to assign issue.", "error"); }
         };
@@ -1388,12 +1371,20 @@
                 inputEl.value = '';
                 await window.updateDoc(docRef, { comments: updatedComments });
 
-                if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email) {
-                    safeSendWebhook({ 
-                        text: `<users/${item.assignedTo}> 💬 *New Comment on your ticket: ${item.title}*\n\n*${window.auth.currentUser.displayName}:* ${text}\n\n<${PORTAL_URL}|Click here to reply>` 
-                    });
+                // Email assignee if they aren't the one typing
+                if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email && item.assignedTo !== item.email) {
+                    const assigneeCommentBody = `
+                        <h3>New comment on your assigned ticket</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>${window.auth.currentUser.displayName} said:</strong></p>
+                        <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${text}</blockquote>
+                        <br>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to view the ticket.</p>
+                    `;
+                    sendEmailNotification(item.assignedTo, `New Comment on Assigned Ticket: ${item.title}`, assigneeCommentBody);
                 }
 
+                // Email reporter if they aren't the one typing
                 if (item.email && item.authorUid !== window.auth.currentUser.uid) {
                     const emailBody = `
                         <h3>New reply to your IS Toddle / Sentral Issues Portal Ticket</h3>
@@ -1406,7 +1397,7 @@
                     sendEmailNotification(item.email, `IS Toddle / Sentral Issues Portal New Reply: ${item.title}`, emailBody);
                 }
 
-                // --- NEW MENTION NOTIFICATION LOGIC ---
+                // Mentions Logic (Email Only)
                 const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
                 let mentionedEmails = [];
                 let match;
@@ -1430,16 +1421,8 @@
                             <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view the details.</p>
                         `;
                         sendEmailNotification(email, `You were mentioned: ${item.title}`, mentionEmailBody);
-                        
-                        // Send Webhook to admins if they are explicitly mentioned
-                        if (ADMIN_EMAILS.includes(email)) {
-                            safeSendWebhook({ 
-                                text: `<users/${email}> 🔔 *You were mentioned by ${window.auth.currentUser.displayName} in ticket: ${item.title}*\n\n"${text}"\n\n<${PORTAL_URL}|Click here to reply>` 
-                            });
-                        }
                     }
                 });
-                // --- END MENTION LOGIC ---
 
             } catch(e) { window.showToast("Failed to post comment.", "error"); }
         };
@@ -1619,9 +1602,19 @@
                         await addDoc(collection(db, 'issues'), newIssue);
                         window.showToast("Issue reported successfully!", 'success');
 
-                        safeSendWebhook({
-                            text: `🚨 *New IS Toddle / Sentral Issues Portal Ticket Submitted*\n\n*Title:* ${title}\n*System:* ${system}\n*Category:* ${category}\n*Reporter:* ${reporter}\n\n*Description:* ${description}\n\n<${PORTAL_URL}|Click here to open portal>`
-                        });
+                        // NEW TICKET NOTIFICATION - Specifically routed only to Paul Cooper
+                        const newTicketEmailBody = `
+                            <h3>New IS Toddle / Sentral Issues Portal Ticket</h3>
+                            <p><strong>Title:</strong> ${title}</p>
+                            <p><strong>System:</strong> ${system}</p>
+                            <p><strong>Category:</strong> ${category}</p>
+                            <p><strong>Reporter:</strong> ${reporter}</p>
+                            <p><strong>Description:</strong></p>
+                            <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${description}</blockquote>
+                            <br>
+                            <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view details.</p>
+                        `;
+                        sendEmailNotification("paul.cooper@online.island.edu.hk", `New Ticket Submitted: ${title}`, newTicketEmailBody);
                     }
                     
                     window.editingIssueId = null; 
