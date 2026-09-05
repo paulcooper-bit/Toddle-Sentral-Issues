@@ -487,10 +487,6 @@
 
         const PORTAL_URL = "https://paulcooper-bit.github.io/Toddle-Sentral-Issues/"; 
         
-        // YOUR GOOGLE APPS SCRIPT WEB APP URL (Secured)
-        const WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbzaj59bWxEfwic2iyMl_kKVZGCSbM8NDrDhU1_8i1_s5DuAiRkCznl-75PQJU3tH_Ib/exec"; 
-        const WEBHOOK_SECRET = "ts-portal-secret-key-9982"; // SECURITY TOKEN
-
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com", "@esfcentre.edu.hk"]; 
         
         // REMOVED HARDCODED ADMINS - Loaded securely from the database settings
@@ -673,22 +669,6 @@
                 });
             } catch (error) {
                 console.error("Failed to queue email notification", error);
-            }
-        }
-
-        function safeSendWebhook(payload) {
-            if (WEBHOOK_URL && WEBHOOK_URL.trim() !== "") {
-                payload.secret_token = WEBHOOK_SECRET; // SECURE TOKEN APPENDED HERE
-                fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain; charset=UTF-8' },
-                    body: JSON.stringify(payload)
-                }).then(res => {
-                    console.log("Chat Webhook Relay triggered successfully.");
-                }).catch(err => {
-                    console.warn("Webhook Relay error:", err);
-                });
             }
         }
 
@@ -1208,11 +1188,6 @@
             try {
                 await window.updateDoc(docRef, { status: "Open", comments: updatedComments });
                 window.showToast("Ticket reopened successfully.", "success");
-                
-                safeSendWebhook({ 
-                    text: `⚠️ *IS Toddle / Sentral Issues Portal Ticket Reopened*\n\n*Title:* ${item.title}\n*Reopened By:* ${window.auth.currentUser.displayName}\n\n<${PORTAL_URL}|Click here to open portal>` 
-                });
-                
                 window.openIssueModal(id);
             } catch(e) {
                 console.error(e);
@@ -1316,12 +1291,6 @@
             try {
                 await window.updateDoc(docRef, { assignedTo: newAssignee, comments: updatedComments });
                 window.showToast(`Issue assigned to ${newAssignee || 'Unassigned'}.`, 'success');
-                
-                if (newAssignee) {
-                    safeSendWebhook({
-                        text: `<users/${newAssignee}> 🚨 *You have been assigned an IS Toddle / Sentral Issues Portal Ticket!*\n\n*Title:* ${item.title}\n*Reporter:* ${item.reporter}\n*System:* ${item.system}\n\n<${PORTAL_URL}|Click here to open portal>`
-                    });
-                }
             } catch(e) { window.showToast("Failed to assign issue.", "error"); }
         };
 
@@ -1383,12 +1352,6 @@
                 inputEl.value = '';
                 await window.updateDoc(docRef, { comments: updatedComments });
 
-                if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email) {
-                    safeSendWebhook({ 
-                        text: `<users/${item.assignedTo}> 💬 *New Comment on your ticket: ${item.title}*\n\n*${window.auth.currentUser.displayName}:* ${text}\n\n<${PORTAL_URL}|Click here to reply>` 
-                    });
-                }
-
                 if (item.email && item.authorUid !== window.auth.currentUser.uid) {
                     const emailBody = `
                         <h3>New reply to your IS Toddle / Sentral Issues Portal Ticket</h3>
@@ -1424,12 +1387,6 @@
                             <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view the details.</p>
                         `;
                         sendEmailNotification(email, `You were mentioned: ${item.title}`, mentionEmailBody);
-                        
-                        if (ADMIN_EMAILS.includes(email)) {
-                            safeSendWebhook({ 
-                                text: `<users/${email}> 🔔 *You were mentioned by ${window.auth.currentUser.displayName} in ticket: ${item.title}*\n\n"${text}"\n\n<${PORTAL_URL}|Click here to reply>` 
-                            });
-                        }
                     }
                 });
 
@@ -1636,10 +1593,6 @@
                             <p>Click <a href="${PORTAL_URL}">here</a> to open the portal.</p>
                         `;
                         sendEmailNotification('paul.cooper@online.island.edu.hk', `New IS Portal Ticket: ${title}`, newTicketEmailBody);
-
-                        safeSendWebhook({
-                            text: `🚨 *New IS Toddle / Sentral Issues Portal Ticket Submitted*\n\n*Title:* ${title}\n*System:* ${system}\n*Category:* ${category}\n*Reporter:* ${reporter}\n\n*Description:* ${description}\n\n<${PORTAL_URL}|Click here to open portal>`
-                        });
                     }
                     
                     window.editingIssueId = null; 
