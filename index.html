@@ -489,6 +489,7 @@
         
         const ALLOWED_DOMAINS = ["@online.island.edu.hk", "@toddleapp.com", "@globalpay.com", "@esfcentre.edu.hk"]; 
         
+        // REMOVED HARDCODED ADMINS - Loaded securely from the database settings
         let ADMIN_EMAILS = [];
 
         const firebaseConfig = {
@@ -572,6 +573,7 @@
                 return;
             }
 
+            // Using DOMPurify to securely sanitize mention rendering
             dropdown.innerHTML = filtered.map(e => `
                 <div class="px-3 py-2 text-xs hover:bg-indigo-50 cursor-pointer border-b border-slate-100 last:border-0" onclick="window.insertMention('${DOMPurify.sanitize(e)}')">
                     <span class="font-bold text-slate-700">${DOMPurify.sanitize(e.split('@')[0])}</span>
@@ -657,6 +659,18 @@
                 }
             }
         });
+
+        async function sendEmailNotification(toEmail, subject, htmlMessage) {
+            if (!toEmail) return;
+            try {
+                await addDoc(collection(db, 'mail'), {
+                    to: toEmail,
+                    message: { subject: subject, html: htmlMessage }
+                });
+            } catch (error) {
+                console.error("Failed to queue email notification", error);
+            }
+        }
 
         window.showToast = function(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -1087,18 +1101,9 @@
 
             const mediaSection = document.getElementById('modal-media-section');
             const mediaContainer = document.getElementById('modal-media-container');
-            
-            // SECURED: Properly sanitized media injection
-            if (item.mediaUrl && item.mediaType === 'video') { 
-                mediaSection.classList.remove('hidden'); 
-                mediaContainer.innerHTML = DOMPurify.sanitize(`<video src="${item.mediaUrl}" controls class="w-full max-h-64 rounded bg-black"></video>`, { ADD_TAGS: ['video'], ADD_ATTR: ['controls'] }); 
-            } else if (item.mediaUrl && item.mediaType === 'image') { 
-                mediaSection.classList.remove('hidden'); 
-                mediaContainer.innerHTML = DOMPurify.sanitize(`<img src="${item.mediaUrl}" class="w-full max-h-72 object-contain rounded">`); 
-            } else { 
-                mediaSection.classList.add('hidden'); 
-                mediaContainer.innerHTML = ''; 
-            }
+            if (item.mediaUrl && item.mediaType === 'video') { mediaSection.classList.remove('hidden'); mediaContainer.innerHTML = `<video src="${item.mediaUrl}" controls class="w-full max-h-64 rounded bg-black"></video>`; } 
+            else if (item.mediaUrl && item.mediaType === 'image') { mediaSection.classList.remove('hidden'); mediaContainer.innerHTML = `<img src="${item.mediaUrl}" class="w-full max-h-72 object-contain rounded">`; } 
+            else { mediaSection.classList.add('hidden'); mediaContainer.innerHTML = ''; }
 
             const chatThread = document.getElementById('modal-chat-thread');
             chatThread.innerHTML = '';
@@ -1115,9 +1120,9 @@
                     if (isSystem) {
                         chatThread.innerHTML += `<div class="flex justify-center my-2"><span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-full shadow-xs border border-slate-200"><i class="fa-solid fa-info-circle mr-1 text-indigo-400"></i> ${DOMPurify.sanitize(msg.author)} ${DOMPurify.sanitize(msg.text)}</span></div>`;
                     } else {
-                        // SECURED: Order of operations fixed. Regex replacement happens BEFORE DOMPurify sanitization.
-                        let textWithMentions = msg.text.replace(/@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g, '<strong class="font-bold underline cursor-help" title="$1">@$1</strong>');
-                        let safeText = DOMPurify.sanitize(textWithMentions);
+                        // DOMPurify applied BEFORE string manipulation
+                        let safeText = DOMPurify.sanitize(msg.text);
+                        safeText = safeText.replace(/@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g, '<strong class="font-bold underline cursor-help" title="$1">@$1</strong>');
                         
                         chatThread.innerHTML += `
                             <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full mt-2">
@@ -1183,6 +1188,17 @@
             try {
                 await window.updateDoc(docRef, { status: "Open", comments: updatedComments });
                 window.showToast("Ticket reopened successfully.", "success");
+                
+                // NEW EMAIL ROUTING: Notify assignee or default Admin
+                const targetEmail = item.assignedTo || 'paul.cooper@online.island.edu.hk';
+                const reopenEmailBody = `
+                    <h3>🚨 Ticket Reopened</h3>
+                    <p><strong>Ticket:</strong> ${item.title}</p>
+                    <p>This ticket was just reopened by ${window.auth.currentUser.displayName}.</p>
+                    <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and investigate.</p>
+                `;
+                sendEmailNotification(targetEmail, `Ticket Reopened: ${item.title}`, reopenEmailBody);
+
                 window.openIssueModal(id);
             } catch(e) {
                 console.error(e);
@@ -1286,6 +1302,20 @@
             try {
                 await window.updateDoc(docRef, { assignedTo: newAssignee, comments: updatedComments });
                 window.showToast(`Issue assigned to ${newAssignee || 'Unassigned'}.`, 'success');
+
+                // NEW ASSIGNEE EMAIL NOTIFICATION
+                if (newAssignee && newAssignee !== window.auth.currentUser.email) {
+                    const emailBody = `
+                        <h3>You have been assigned a new ticket!</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>Reporter:</strong> ${item.reporter}</p>
+                        <p><strong>System:</strong> ${item.system}</p>
+                        <br>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view the details.</p>
+                    `;
+                    sendEmailNotification(newAssignee, `Assigned to you: ${item.title}`, emailBody);
+                }
+
             } catch(e) { window.showToast("Failed to assign issue.", "error"); }
         };
 
@@ -1307,6 +1337,28 @@
                     document.getElementById('modal-reopen-btn').classList.add('hidden');
                 }
 
+                if (item.email) {
+                    const emailBody = `
+                        <h3>Your IS Toddle / Sentral Issues Portal Ticket has been updated!</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>New Status:</strong> ${newStatus}</p>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and view details.</p>
+                    `;
+                    sendEmailNotification(item.email, `IS Toddle / Sentral Issues Portal Update: ${item.title}`, emailBody);
+                }
+
+                if (newStatus === 'Resolved' && item.upvotedEmails) {
+                    const bccList = item.upvotedEmails.filter(e => e !== item.email && e !== window.auth.currentUser.email);
+                    bccList.forEach(upvoterEmail => {
+                        const upvoterEmailBody = `
+                            <h3>A ticket you upvoted has been resolved!</h3>
+                            <p><strong>Ticket:</strong> ${item.title}</p>
+                            <p>This issue has been marked as resolved. Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and view details.</p>
+                        `;
+                        sendEmailNotification(upvoterEmail, `IS Toddle / Sentral Issues Portal Resolved: ${item.title}`, upvoterEmailBody);
+                    });
+                }
+
             } catch(e) { window.showToast("Failed to update status.", "error"); }
         };
 
@@ -1324,6 +1376,59 @@
             try {
                 inputEl.value = '';
                 await window.updateDoc(docRef, { comments: updatedComments });
+
+                // Original Reporter Notification
+                if (item.email && item.authorUid !== window.auth.currentUser.uid) {
+                    const emailBody = `
+                        <h3>New reply to your IS Toddle / Sentral Issues Portal Ticket</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>${DOMPurify.sanitize(window.auth.currentUser.displayName)} said:</strong></p>
+                        <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${DOMPurify.sanitize(text)}</blockquote>
+                        <br>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the IS Toddle / Sentral Issues Portal and respond.</p>
+                    `;
+                    sendEmailNotification(item.email, `IS Toddle / Sentral Issues Portal New Reply: ${item.title}`, emailBody);
+                }
+
+                // NEW ASSIGNEE EMAIL NOTIFICATION
+                if (item.assignedTo && item.assignedTo !== window.auth.currentUser.email) {
+                    const assigneeEmailBody = `
+                        <h3>New reply to your assigned ticket</h3>
+                        <p><strong>Ticket:</strong> ${item.title}</p>
+                        <p><strong>${DOMPurify.sanitize(window.auth.currentUser.displayName)} said:</strong></p>
+                        <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${DOMPurify.sanitize(text)}</blockquote>
+                        <br>
+                        <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and respond.</p>
+                    `;
+                    sendEmailNotification(item.assignedTo, `New Reply on Assigned Ticket: ${item.title}`, assigneeEmailBody);
+                }
+
+                // Mention Logic & Email Routing
+                const mentionRegex = /@([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/g;
+                let mentionedEmails = [];
+                let match;
+                while ((match = mentionRegex.exec(text)) !== null) {
+                    mentionedEmails.push(match[1].toLowerCase());
+                }
+                mentionedEmails = [...new Set(mentionedEmails)]; // Unique emails
+                
+                mentionedEmails.forEach(email => {
+                    const isReporter = (email === (item.email || '').toLowerCase() && item.authorUid !== window.auth.currentUser.uid);
+                    const isAssignee = (email === (item.assignedTo || '').toLowerCase() && item.assignedTo !== window.auth.currentUser.email);
+                    
+                    if (email !== window.auth.currentUser.email && !isReporter && !isAssignee) {
+                        const mentionEmailBody = `
+                            <h3>You were mentioned in a ticket!</h3>
+                            <p><strong>Ticket:</strong> ${item.title}</p>
+                            <p><strong>${DOMPurify.sanitize(window.auth.currentUser.displayName)} mentioned you:</strong></p>
+                            <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${DOMPurify.sanitize(text)}</blockquote>
+                            <br>
+                            <p>Click <a href="${PORTAL_URL}">here</a> to open the portal and view the details.</p>
+                        `;
+                        sendEmailNotification(email, `You were mentioned: ${item.title}`, mentionEmailBody);
+                    }
+                });
+
             } catch(e) { window.showToast("Failed to post comment.", "error"); }
         };
 
@@ -1515,6 +1620,18 @@
                         };
                         await addDoc(collection(db, 'issues'), newIssue);
                         window.showToast("Issue reported successfully!", 'success');
+
+                        // RESTRICTED TICKET NOTIFICATION - Only sends email to Paul Cooper
+                        const newTicketEmailBody = `
+                            <h3>🚨 New Issue Reported</h3>
+                            <p><strong>Title:</strong> ${DOMPurify.sanitize(title)}</p>
+                            <p><strong>Category:</strong> ${DOMPurify.sanitize(category)} | <strong>System:</strong> ${DOMPurify.sanitize(system)} | <strong>Dept:</strong> ${DOMPurify.sanitize(subject)}</p>
+                            <p><strong>Reporter:</strong> ${DOMPurify.sanitize(reporter)} (${DOMPurify.sanitize(email)})</p>
+                            <blockquote style="background:#f1f5f9; padding:10px; border-left:4px solid #4f46e5;">${DOMPurify.sanitize(description)}</blockquote>
+                            <br>
+                            <p>Click <a href="${PORTAL_URL}">here</a> to open the portal.</p>
+                        `;
+                        sendEmailNotification('paul.cooper@online.island.edu.hk', `New IS Portal Ticket: ${title}`, newTicketEmailBody);
                     }
                     
                     window.editingIssueId = null; 
